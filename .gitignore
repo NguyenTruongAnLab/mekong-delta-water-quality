@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Restricted data — DO NOT COMMIT raw data to the public repo
+data/mekong_delta_water_quality_1985_2023.csv
+data/hydrology/
+data/Population/
+data/Fertilizers/
+
+# Keep data/README.md
+!data/README.md
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Metrics (generated locally)
+scripts/99_publish/nw_figures/metrics/
+scripts/99_publish/nw_tables/metrics/

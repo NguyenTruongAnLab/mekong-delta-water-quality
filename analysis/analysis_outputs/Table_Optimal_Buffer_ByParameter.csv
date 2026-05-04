@@ -1,0 +1,10 @@
+WQ_Parameter,Optimal_Buffer_km,Best_LULC_Metric,Peak_Spearman_r,n_station_years,Expected_Direction
+DO,30,Aquaculture_config_PD,-0.368492069163271,1097,Negative
+BOD5,28,Residential_Urban_config_LSI,0.6278360460944004,613,Positive
+COD,22,Water_Bodies_composition_pct,0.6753150803668624,1266,Positive
+NH4,24,Water_Bodies_composition_pct,0.3869458855158839,1314,Positive
+NO3,23,Other_Crops_config_ED,0.3875726241887919,1275,Positive
+TN,16,Residential_Urban_composition_pct,0.4668826040902031,731,Positive
+TSS,24,Water_Bodies_config_PD,0.3909070751174617,1371,Positive
+PO4,23,Forest_config_ED,0.3616705572993013,270,Positive
+TP,1,Water_Bodies_config_LSI,0.3013902757390194,727,Positive
