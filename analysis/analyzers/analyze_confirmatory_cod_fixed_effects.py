@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """analyze_confirmatory_cod_fixed_effects.py
 
-Reviewer4 confirmatory check:
-Fit a simpler, interpretable regression as a sanity check against RF+SHAP.
+Confirmatory fixed-effects regression check alongside RF+SHAP attribution.
 
-Model (19 Ben Tre stations, complete-case, 2005–2020):
+Model (19 Ben Tre stations, complete-case, 2005-2020):
     COD ~ Urban_PD + Aquaculture_ED + Rice_PD + Salinity + Year + station fixed effects
 
 - MRC stations excluded (systematic permanganate/dichromate COD offset).
@@ -22,6 +21,7 @@ Interpretation:
 from __future__ import annotations
 
 import os
+import sys
 
 import numpy as np
 import pandas as pd
@@ -29,21 +29,24 @@ import statsmodels.formula.api as smf
 from scipy import stats
 from statsmodels.stats.sandwich_covariance import cov_cluster_2groups
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+ANALYSIS_DIR = os.path.dirname(SCRIPT_DIR)
+REPO_ROOT = os.path.dirname(ANALYSIS_DIR)
+if REPO_ROOT not in sys.path:
+    sys.path.insert(0, REPO_ROOT)
+
 try:
     from analysis.lib.hydro_ingest import HydroClimateColumns, join_branch_hydroclimate
 except ModuleNotFoundError:
     from lib.hydro_ingest import HydroClimateColumns, join_branch_hydroclimate
 
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-# analysis/ is the parent of analyzers/
-ANALYSIS_DIR = os.path.dirname(SCRIPT_DIR)
-REPO_ROOT = os.path.dirname(ANALYSIS_DIR)
 OUTPUT_DIR = os.path.join(ANALYSIS_DIR, "analysis_outputs")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 WQ_FILE = os.path.join(REPO_ROOT, "data", "mekong_delta_water_quality_1985_2023.csv")
 LULC_FILE = os.path.join(ANALYSIS_DIR, "cache", "lulc_metrics_corrected_16km.csv")
+MASTER_FILE = os.path.join(ANALYSIS_DIR, "cache", "station_year_master_latest.csv")
 
 TARGET = "COD (mg/L)"
 
@@ -58,42 +61,38 @@ def zscore(s: pd.Series) -> pd.Series:
 
 
 def main() -> None:
-    for fp in [WQ_FILE, LULC_FILE]:
-        if not os.path.exists(fp):
-            raise FileNotFoundError(fp)
-
-    df_wq = pd.read_csv(WQ_FILE)
-    df_wq["year"] = pd.to_datetime(df_wq["datetime"], errors="coerce").dt.year
-
-    wq_annual = (
-        df_wq.groupby(["stationName", "River", "year"], as_index=False)
-        .mean(numeric_only=True)
-    )
-
-    if TARGET not in wq_annual.columns:
-        raise ValueError(f"Missing {TARGET} in annual WQ table")
-
-    df_lulc = pd.read_csv(LULC_FILE)
-
-    df = pd.merge(wq_annual, df_lulc, on=["stationName", "year"], how="inner")
-
-    # Restrict to Ben Tre local-agency stations (19 stations).
-    # MRC stations (Tan Chau, Can Tho, My Thuan, My Tho) use permanganate COD
-    # which is ~3x lower than dichromate COD, creating a systematic offset.
     MRC = {"Tan Chau", "Can Tho", "My Thuan", "My Tho"}
-    df = df[~df["stationName"].isin(MRC)].copy()
-
-    # Join hydro-climate covariates (Gold Standard). Use Q_MyThuan as universal proxy for all stations.
-    h = join_branch_hydroclimate(df[["stationName", "year"]].copy())
     hcols = HydroClimateColumns()
-    for c in [
-        hcols.q_mythuan_annual_z,
-        hcols.q_mythuan_dry_z,
-        hcols.rain_annual_z,
-        hcols.rain_dry_z,
-    ]:
-        if c in h.columns:
-            df[c] = h[c].values
+
+    if os.path.exists(WQ_FILE) and os.path.exists(LULC_FILE):
+        df_wq = pd.read_csv(WQ_FILE)
+        df_wq["year"] = pd.to_datetime(df_wq["datetime"], errors="coerce").dt.year
+        wq_annual = (
+            df_wq.groupby(["stationName", "River", "year"], as_index=False)
+            .mean(numeric_only=True)
+        )
+        if TARGET not in wq_annual.columns:
+            raise ValueError(f"Missing {TARGET} in annual WQ table")
+        df_lulc = pd.read_csv(LULC_FILE)
+        df = pd.merge(wq_annual, df_lulc, on=["stationName", "year"], how="inner")
+        df = df[~df["stationName"].isin(MRC)].copy()
+        h = join_branch_hydroclimate(df[["stationName", "year"]].copy())
+        for c in [
+            hcols.q_mythuan_annual_z,
+            hcols.q_mythuan_dry_z,
+            hcols.rain_annual_z,
+            hcols.rain_dry_z,
+        ]:
+            if c in h.columns:
+                df[c] = h[c].values
+    elif os.path.exists(MASTER_FILE):
+        df = pd.read_csv(MASTER_FILE)
+        df = df[~df["stationName"].isin(MRC)].copy()
+        df = df[(df["year"] >= 2005) & (df["year"] <= 2020)].copy()
+        df[TARGET] = df["COD (mg/L)_annual"]
+        df["Salinity"] = df["Salinity_annual"]
+    else:
+        raise FileNotFoundError(WQ_FILE)
 
     # Variables (intentionally small set)
     needed = [
@@ -180,7 +179,7 @@ def main() -> None:
         })
         out_parts.append(out)
 
-        # ----- Covariance robustness table (requested by reviewers) -----
+        # ----- Covariance robustness table -----
         terms = list(ols_model.params.index)
         params = pd.Series(ols_model.params.values, index=terms)
 
@@ -205,7 +204,7 @@ def main() -> None:
         bse_year = pd.Series(cl_year.bse, index=terms)
         p_year = pd.Series(cl_year.pvalues, index=terms)
 
-        # Two-way clustered covariance (station × year)
+        # Two-way clustered covariance (station x year)
         cov_tw, _, _ = cov_cluster_2groups(
             ols_model,
             group=station_codes,
@@ -241,7 +240,7 @@ def main() -> None:
                     }
                 )
 
-        # Wide stability summary for quick reviewer check
+        # Wide stability summary across covariance estimators
         for term in terms:
             se_vals = {
                 "HC3": float(bse_hc3[term]),

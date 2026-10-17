@@ -1,41 +1,36 @@
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 from scipy.signal import butter, filtfilt
 from scipy import stats
 import os
-import glob
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+ANALYSIS_DIR = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 try:
-    # When analysis is on PYTHONPATH
     from analysis.lib.gold_standard_hydro import load_gold_standard
 except Exception:
-    # When running as `python analysis/<script>.py`
     from lib.gold_standard_hydro import load_gold_standard
 
-# Configuration (relative to this script)
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-WL_MASTER_FILE = os.path.join(
-    SCRIPT_DIR,
-    '..',
-    'data',
-    'hydrology',
-    'data',
-    'inputs',
-    'agency_cleaned',
-    'water_level_hourly_unified_cleaned.csv',
+WL_MASTER_FILE = str(
+    REPO_ROOT
+    / 'data'
+    / 'hydrology'
+    / 'data'
+    / 'inputs'
+    / 'agency_cleaned'
+    / 'water_level_hourly_unified_cleaned.csv'
 )
-WQ_FILE = os.path.join(SCRIPT_DIR, 'mekong_delta_water_quality_1985_2023.csv')
-OUTPUT_DIR = os.path.join(SCRIPT_DIR, 'analysis_outputs')
-
-# Also export key figures to the manuscript for Quarto to pick up
-MANUSCRIPT_FIG_DIR = os.path.join(SCRIPT_DIR, '..', 'manuscript', 'figures')
-os.makedirs(MANUSCRIPT_FIG_DIR, exist_ok=True)
+WQ_FILE = str(REPO_ROOT / 'data' / 'mekong_delta_water_quality_1985_2023.csv')
+OUTPUT_DIR = str(ANALYSIS_DIR / 'analysis_outputs')
 
 # Primary tidal-river stations with continuous hourly coverage across the study period.
-# Can Tho (Hau branch) and My Thuan (Tien branch) are ~90–100 km from the estuarine mouth
+# Can Tho (Hau branch) and My Thuan (Tien branch) are ~90-100 km from the estuarine mouth
 # and capture tidal influence on the two main branches.
 STATIONS = {
     'CanTho': 'H_CanTho',
@@ -280,42 +275,9 @@ def analyze_advanced_hydrodynamics(wl_dfs):
 
     return wl_dfs
 
-def plot_hydrodynamics(wl_dfs):
-    print("Plotting Hydrodynamics...")
-    
-    # Figure: two-station decomposition (Can Tho vs My Thuan)
-    bases = [b for b in ['CanTho', 'MyThuan'] if b in wl_dfs and f'{b}_Residual' in wl_dfs and f'{b}_ShortTerm' in wl_dfs]
-    if len(bases) == 2:
-        fig, axes = plt.subplots(3, 2, figsize=(14, 10), sharex=False)
-
-        for j, base in enumerate(bases):
-            # (A) total
-            wl_dfs[base].plot(ax=axes[0, j], color='black', lw=0.4, label='Total WL')
-            axes[0, j].set_title(f'(A) Total Water Level ({base})')
-            axes[0, j].legend(loc='upper left')
-
-            # (B) short-term (last 30 days) — independent x-axis so it doesn't collapse to a vertical line
-            end = wl_dfs[f'{base}_ShortTerm'].index.max()
-            start = end - pd.Timedelta(days=30)
-            wl_dfs[f'{base}_ShortTerm'].loc[start:end].plot(ax=axes[1, j], color='blue', lw=0.8, label='Short-term (high-pass)')
-            axes[1, j].set_title('(B) Short-term Component (Last 30 days)')
-            axes[1, j].set_xlim(start, end)
-
-            # (C) residual
-            wl_dfs[f'{base}_Residual'].plot(ax=axes[2, j], color='red', lw=0.6, label='Residual (low-pass)')
-            axes[2, j].set_title('(C) Low-frequency Residual Water Level')
-
-        plt.tight_layout()
-        out_local = os.path.join(OUTPUT_DIR, 'Figure_Tidal_Decomposition.png')
-        plt.savefig(out_local)
-        out_manu = os.path.join(MANUSCRIPT_FIG_DIR, 'Figure_Tidal_Decomposition.png')
-        plt.savefig(out_manu, dpi=300)
-        print('Saved Figure_Tidal_Decomposition.png')
-
 def main():
     wl_dfs = load_water_level_master(STATIONS)
-    wl_dfs = analyze_advanced_hydrodynamics(wl_dfs)
-    plot_hydrodynamics(wl_dfs)
+    analyze_advanced_hydrodynamics(wl_dfs)
 
 if __name__ == "__main__":
     main()

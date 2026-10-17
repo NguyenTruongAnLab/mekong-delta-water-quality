@@ -19,12 +19,16 @@ from datetime import datetime
 import warnings
 warnings.filterwarnings('ignore')
 
+from pathlib import Path
+
 # ==============================================================================
 # CONFIGURATION
 # ==============================================================================
-CACHE_DIR = "cache"
-OUTPUT_DIR = "analysis_outputs"
-WQ_CSV = 'mekong_delta_water_quality_1985_2023.csv'
+ANALYSIS_DIR = Path(__file__).resolve().parent
+REPO_ROOT = ANALYSIS_DIR.parent
+CACHE_DIR = str(ANALYSIS_DIR / "cache")
+OUTPUT_DIR = str(ANALYSIS_DIR / "analysis_outputs")
+WQ_CSV = str(REPO_ROOT / "data" / "mekong_delta_water_quality_1985_2023.csv")
 
 # Buffer range (same as main analysis)
 BUFFERS = list(range(1, 31))

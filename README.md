@@ -31,7 +31,6 @@ Using a 38-year observational synthesis (1985 to 2022) across the Vietnamese Mek
 │   │   ├── station_year_master_latest.schema.json
 │   │   └── lulc_metrics_corrected_16km.csv       # 16 km satellite LULC composition/configuration cache
 │   ├── analysis_outputs/               # Precomputed model outputs, SHAP tables, and sensitivity CSVs
-│   ├── export_quarto_tables.py         # Exports formatted supplementary tables
 │   ├── prepare_egret_data.py           # Formats daily discharge and water quality for EGRET/WRTDS
 │   └── run_buffer_analysis_by_network.py
 ├── data/
@@ -66,7 +65,7 @@ Create a Python 3.10+ environment and install the required packages:
 pip install -r requirements.txt
 ```
 
-For the Weighted Regressions on Time, Discharge, and Season (WRTDS) flow-normalization script (`analysis/wrtds_egret/run_wrtds.R`), R (v4.2+) with the `EGRET` package is used; precomputed WRTDS summary tables are provided in `analysis/wrtds_egret/`.
+For the Weighted Regressions on Time, Discharge, and Season (WRTDS) flow-normalization script (`analysis/wrtds_egret/run_wrtds.R`), R (v4.2+) with the `EGRET` package is used; precomputed WRTDS summary tables are provided in `analysis/wrtds_egret/outputs/`.
 
 ## Reproducing the analysis and manuscript verification
 

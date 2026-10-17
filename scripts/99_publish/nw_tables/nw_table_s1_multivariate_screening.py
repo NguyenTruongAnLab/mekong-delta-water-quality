@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Supplementary Table S1 — Multivariate Screening Diagnostics
-============================================================
+Supplementary Table S1: Multivariate Screening Diagnostics
+==========================================================
 
 Computes from RAW DATA:
   1. RDA (Redundancy Analysis) biplot scores for constrained axes 1–2

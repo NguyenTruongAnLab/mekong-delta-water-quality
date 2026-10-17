@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """analyze_urban_masking_regression.py
 
-Reviewer3 suggested validating reversed upstream–downstream gradients by controlling for
-confounders such as salinity/downstream position and aquaculture extent.
+Evaluates upstream-downstream COD gradients while controlling for confounders
+such as salinity/downstream position and aquaculture extent.
 
-This script runs an within-branch multiple regression for the My Tho tributary
+This script runs a within-branch multiple regression for the My Tho tributary
 (Ben Tre MTxx stations), using annual means matched to LULC metrics:
 
     COD ~ Urban_PD + Aquaculture_% + Salinity + Year
@@ -16,26 +16,27 @@ Outputs (analysis/analysis_outputs):
 
 Notes
 -----
-- This is still observational; coefficients should be interpreted as conditional
-  associations.
+- Coefficients represent conditional associations in the observational panel.
 - Salinity is treated as a proxy for downstream position/tidal influence.
 """
 
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-OUTPUT_DIR = os.path.join(SCRIPT_DIR, "analysis_outputs")
+REPO_ROOT = Path(__file__).resolve().parents[2]
+ANALYSIS_DIR = Path(__file__).resolve().parents[1]
+OUTPUT_DIR = str(ANALYSIS_DIR / "analysis_outputs")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-WQ_FILE = os.path.join(SCRIPT_DIR, "mekong_delta_water_quality_1985_2023.csv")
-LULC_FILE = os.path.join(SCRIPT_DIR, "cache", "lulc_metrics_corrected_16km.csv")
+WQ_FILE = str(REPO_ROOT / "data" / "mekong_delta_water_quality_1985_2023.csv")
+LULC_FILE = str(ANALYSIS_DIR / "cache" / "lulc_metrics_corrected_16km.csv")
 
 TARGET = "COD (mg/L)"
 
@@ -50,25 +51,24 @@ def zscore(s: pd.Series) -> pd.Series:
 
 
 def main() -> None:
-    for fp in [WQ_FILE, LULC_FILE]:
-        if not os.path.exists(fp):
-            raise FileNotFoundError(fp)
-
-    df_wq = pd.read_csv(WQ_FILE)
-    df_wq["year"] = pd.to_datetime(df_wq["datetime"], errors="coerce").dt.year
-
-    # Annual means
-    wq_annual = (
-        df_wq.groupby(["stationName", "River", "year"], as_index=False)
-        .mean(numeric_only=True)
-    )
-
-    if TARGET not in wq_annual.columns or "Salinity" not in wq_annual.columns:
-        raise ValueError("Required columns missing in annual WQ table (need COD and Salinity).")
-
-    df_lulc = pd.read_csv(LULC_FILE)
-
-    merged = pd.merge(wq_annual, df_lulc, on=["stationName", "year"], how="inner")
+    master_file = str(ANALYSIS_DIR / "cache" / "station_year_master_latest.csv")
+    if os.path.exists(WQ_FILE) and os.path.exists(LULC_FILE):
+        df_wq = pd.read_csv(WQ_FILE)
+        df_wq["year"] = pd.to_datetime(df_wq["datetime"], errors="coerce").dt.year
+        wq_annual = (
+            df_wq.groupby(["stationName", "River", "year"], as_index=False)
+            .mean(numeric_only=True)
+        )
+        if TARGET not in wq_annual.columns or "Salinity" not in wq_annual.columns:
+            raise ValueError("Required columns missing in annual WQ table (need COD and Salinity).")
+        df_lulc = pd.read_csv(LULC_FILE)
+        merged = pd.merge(wq_annual, df_lulc, on=["stationName", "year"], how="inner")
+    elif os.path.exists(master_file):
+        merged = pd.read_csv(master_file)
+        merged[TARGET] = merged["COD (mg/L)_annual"]
+        merged["Salinity"] = merged["Salinity_annual"]
+    else:
+        raise FileNotFoundError(WQ_FILE)
 
     # My Tho branch, Ben Tre stations only
     merged = merged[(merged["stationName"].astype(str).str.match(r"^MT\d{2}$"))].copy()

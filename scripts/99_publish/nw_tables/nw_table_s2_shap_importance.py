@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Supplementary Table S2 — SHAP Feature Importance Rankings
-=========================================================
+Supplementary Table S2: SHAP Feature Importance Rankings
+========================================================
 
 Computes from RAW DATA:
   1. Baseline RF + SHAP (6 predictors, LOSO CV, per parameter)

@@ -1,4 +1,4 @@
-"""Phase 3: Outcome decomposition — evaluate different COD/DO/NO3 transformations
+"""Outcome decomposition: evaluate COD, DO, and NO3-N transformations
 to find which response formulation yields the most robust spatial generalization.
 
 Transformations tested:

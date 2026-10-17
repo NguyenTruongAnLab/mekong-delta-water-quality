@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 """analyze_load_intensity_and_mass_balance.py
 
-Reviewer-facing robustness/diagnostic analyses to strengthen mechanistic
-interpretation of observational land-use attribution:
+Diagnostic analyses supporting mechanistic interpretation of observational
+land-use attribution:
 
 1) Load intensity vs. urban fragmentation (Ben Tre branches with discharge proxies)
    - Computes annual COD loads (tons/day) using branch discharge proxies
    - Converts loads to intensities (kg/ha/day) per buffer area and per urban area
    - Summarizes intensities across Urban Patch Density (PD) quantiles
 
-2) Simple load–dilution decomposition (selected key stations)
+2) Simple load-dilution decomposition (selected key stations)
    - Uses annual mean concentration C and annual mean discharge Q
    - Uses identity: L = C * Q * 0.0864  (tons/day)
    - Decomposes concentration change between two endpoints into:
-       ΔC_total = ΔC_load + ΔC_dilution + residual
+       dC_total = dC_load + dC_dilution + residual
 
 Outputs (written to analysis/analysis_outputs):
 - cod_load_intensity_by_urban_fragmentation_latest.csv
@@ -31,34 +31,37 @@ Notes
 from __future__ import annotations
 
 import os
+import sys
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+ANALYSIS_DIR = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 try:
-    # When executed from repo root (e.g., tests, python -m ...)
     from analysis.lib.gold_standard_hydro import GoldStandardColumns, load_gold_standard
 except ModuleNotFoundError:
-    # When executed as a file from within the analysis/ directory
     from lib.gold_standard_hydro import GoldStandardColumns, load_gold_standard
 
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-OUTPUT_DIR = os.path.join(SCRIPT_DIR, "analysis_outputs")
+OUTPUT_DIR = str(ANALYSIS_DIR / "analysis_outputs")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-WQ_FILE = os.path.join(SCRIPT_DIR, "mekong_delta_water_quality_1985_2023.csv")
-LULC_FILE = os.path.join(SCRIPT_DIR, "cache", "lulc_metrics_corrected_16km.csv")
-Q_FILE = os.path.join(
-    SCRIPT_DIR,
-    "..",
-    "data",
-    "hydrology",
-    "outputs",
-    "final_datasets",
-    "Mekong_Delta_Gold_Standard_Master_1985_2025.csv",
+WQ_FILE = str(REPO_ROOT / "data" / "mekong_delta_water_quality_1985_2023.csv")
+LULC_FILE = str(ANALYSIS_DIR / "cache" / "lulc_metrics_corrected_16km.csv")
+Q_FILE = str(
+    REPO_ROOT
+    / "data"
+    / "hydrology"
+    / "outputs"
+    / "final_datasets"
+    / "Mekong_Delta_Gold_Standard_Master_1985_2025.csv"
 )
 
 TARGET = "COD (mg/L)"

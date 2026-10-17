@@ -13,10 +13,9 @@ Adapted to read: cache/lulc_metrics_corrected_{km}km.csv
 import os
 import warnings
 import time
+from pathlib import Path
 import pandas as pd
 import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
 from scipy.stats import spearmanr
 from statsmodels.stats.multitest import multipletests
 from tqdm.auto import tqdm
@@ -24,17 +23,17 @@ from joblib import Parallel, delayed
 
 # Configuration
 warnings.filterwarnings('ignore')
-sns.set_theme(style="whitegrid", palette="viridis")
-plt.rcParams['figure.dpi'] = 150
 
 print("="*80)
-print("TEMPORAL BOOTSTRAP SENSITIVITY ANALYSIS (Publication Grade v2)")
+print("TEMPORAL BOOTSTRAP SENSITIVITY ANALYSIS")
 print("Quantifying Uncertainty from Multi-Frequency Monitoring Integration")
 print("="*80)
 
 # Paths
-CACHE_DIR = "cache"
-OUTPUT_DIR = "analysis_outputs"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+ANALYSIS_DIR = Path(__file__).resolve().parents[1]
+CACHE_DIR = str(ANALYSIS_DIR / "cache")
+OUTPUT_DIR = str(ANALYSIS_DIR / "analysis_outputs")
 APPENDIX_DIR = os.path.join(OUTPUT_DIR, "Appendix_Scale_Analysis_Final")
 DIAGNOSTICS_DIR = os.path.join(OUTPUT_DIR, "Temporal_Uncertainty_Diagnostics")
 
@@ -43,7 +42,7 @@ for directory in [OUTPUT_DIR, APPENDIX_DIR, DIAGNOSTICS_DIR]:
         os.makedirs(directory)
 
 # Input files
-WQ_CSV = 'mekong_delta_water_quality_1985_2023.csv'
+WQ_CSV = str(REPO_ROOT / "data" / "mekong_delta_water_quality_1985_2023.csv")
 
 # =============================================================================
 # ANALYSIS PARAMETERS (Following manuscript specifications)
@@ -246,46 +245,23 @@ def temporal_bootstrap_worker(job_info):
     for iteration in range(N_BOOTSTRAP):
         try:
             bootstrap_annual_means = []
-            
-            # For EACH station-year, resample its monthly observations
-            # Optimization: Groupby once outside loop (passed in merged_subset)
-            # But here we need to iterate relative to station/year groups
-            
-            # Vectorized approach or efficient loop?
-            # merged_subset contains multple rows per station-year.
-            # We want to sample N rows from each group with replacement, where N=group_size
-            
-            # Efficient resampling using pandas sample within groups is slow in loop
-            # Faster approach: manual numpy indexing
-            
-            # Since strict performance isn't blocking, use the clear loop for readability/correctness
-            # unless it's too slow. User code used group.sample.
-            
-            # Slightly optimized:
-            # We can re-use the groupby object if defined outside
-            pass # (Logic carried over from user code)
-
-            # Re-implementation of user logic inside loop:
-                 for (station, year), group in merged_subset.groupby(['stationName', 'year']):
-                # Resample observations with replacement
+            for (station, year), group in merged_subset.groupby(['stationName', 'year']):
                 n_obs = len(group)
                 if n_obs > 0:
-                     # Use deterministic RNG for reproducibility
-                     resampled_values = rng.choice(group[wq_param].values, size=n_obs, replace=True)
-                   bootstrap_wq_mean = np.mean(resampled_values)
-                   lulc_value = group[lulc_metric].iloc[0]
-                   
-                   bootstrap_annual_means.append((lulc_value, bootstrap_wq_mean))
-            
-            if not bootstrap_annual_means: continue
+                    resampled_values = rng.choice(group[wq_param].values, size=n_obs, replace=True)
+                    bootstrap_wq_mean = np.mean(resampled_values)
+                    lulc_value = group[lulc_metric].iloc[0]
+                    bootstrap_annual_means.append((lulc_value, bootstrap_wq_mean))
 
-            # Convert to arrays for spearmanr
+            if not bootstrap_annual_means:
+                continue
+
             data = np.array(bootstrap_annual_means)
             r_boot, _ = spearmanr(data[:, 0], data[:, 1])
-            
+
             if not np.isnan(r_boot):
                 bootstrap_correlations.append(r_boot)
-                
+
         except Exception:
             continue
     
@@ -468,98 +444,6 @@ def identify_optimal_scales(corr_df, output_file):
     return optimal_df
 
 # =============================================================================
-# STEP 6: VISUALIZATION
-# =============================================================================
-
-def create_publication_figure(corr_df, optimal_df, output_file, top_n=5):
-    """Create publication-quality figure with FDR significance."""
-    print("\n" + "="*80)
-    print("STEP 5: CREATING PUBLICATION FIGURE")
-    print("="*80)
-    
-    if corr_df.empty:
-        return
-    
-    # Filter for FDR-significant correlations only
-    sig_corr = corr_df[corr_df['FDR_significant']].copy()
-    
-    if sig_corr.empty:
-        print("⚠️  No FDR-significant correlations to visualize")
-        sig_corr = corr_df[corr_df['Spearman_p'] < 0.05].copy()
-    
-    all_params = sorted(sig_corr['WQ_Parameter'].unique())
-    n_plots = len(all_params)
-    n_cols = 3
-    n_rows = (n_plots + n_cols - 1) // n_cols
-    
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(22, 6*n_rows),
-                             squeeze=False, sharey=True)
-    axes = axes.flatten()
-    
-    fig.suptitle(
-        f'Multi-Scale Sensitivity Analysis with Temporal Bootstrap (N={N_BOOTSTRAP})\n' +
-        f'95% CI from within-year resampling | FDR-corrected significance (q<{FDR_ALPHA})',
-        fontsize=18, fontweight='bold', y=0.995
-    )
-    
-    for i, wq_param in enumerate(all_params):
-        ax = axes[i]
-        df_param = sig_corr[sig_corr['WQ_Parameter'] == wq_param].copy()
-        
-        # Get top N metrics
-        df_param['max_abs_r'] = df_param.groupby('LULC_Metric')['abs_r'].transform('max')
-        top_metrics = df_param.drop_duplicates('LULC_Metric').nlargest(top_n, 'max_abs_r')['LULC_Metric'].tolist()
-        df_plot = df_param[df_param['LULC_Metric'].isin(top_metrics)]
-        
-        palette = sns.color_palette("viridis", n_colors=len(top_metrics))
-        
-        for j, metric in enumerate(top_metrics):
-            subset = df_plot[df_plot['LULC_Metric'] == metric].sort_values('Buffer_km')
-            
-            if len(subset) == 0:
-                continue
-            
-            ax.plot(subset['Buffer_km'], subset['Spearman_r'],
-                   marker='o', label=metric, # Removed n=... to save space
-                   markersize=4, linewidth=2, color=palette[j])
-            
-            # Temporal uncertainty ribbon
-            ax.fill_between(subset['Buffer_km'],
-                           subset['r_CI_lower'],
-                           subset['r_CI_upper'],
-                           color=palette[j], alpha=0.15)
-        
-        # Mark optimal scale
-        opt_row = optimal_df[optimal_df['WQ_Parameter'] == wq_param]
-        if not opt_row.empty:
-            opt_km = opt_row['Buffer_km'].iloc[0]
-            opt_r = opt_row['Spearman_r'].iloc[0]
-            
-            ax.axvline(x=opt_km, color='red', linestyle='--',
-                      linewidth=1.5, alpha=0.7, zorder=5)
-            ax.scatter(opt_km, opt_r, s=300, c='red', marker='*',
-                      zorder=10, edgecolors='black', linewidths=1.5)
-        
-        ax.axhline(0, color='grey', linestyle='--', lw=1, alpha=0.5)
-        ax.set_title(f"{wq_param} (Best: {opt_km if not opt_row.empty else 'N/A'}km)",
-                    fontsize=14, fontweight='bold')
-        ax.set_xlabel('Buffer Radius (km)', fontsize=11)
-        ax.set_ylabel("Spearman's ρ", fontsize=11)
-        ax.set_xlim(0, 31)
-        ax.set_ylim(-1, 1)
-        ax.set_xticks(range(0, 31, 5))
-        ax.grid(True, alpha=0.3, linestyle=':')
-        ax.legend(fontsize=8, frameon=True, facecolor='white', framealpha=0.9)
-    
-    for j in range(i+1, len(axes)):
-        fig.delaxes(axes[j])
-    
-    plt.tight_layout(rect=[0, 0.01, 1, 0.99])
-    plt.savefig(output_file, dpi=300, bbox_inches='tight')
-    print(f"Saved: {output_file}")
-    plt.close()
-
-# =============================================================================
 # MAIN EXECUTION
 # =============================================================================
 
@@ -567,49 +451,32 @@ if __name__ == "__main__":
     overall_start = time.time()
     
     try:
-        print(f"\n🚀 Analysis started: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        print(f"\nAnalysis started: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
         
-        # Load data
         lulc_df = load_all_buffer_data(CACHE_DIR, ALL_BUFFERS_KM)
         
         if not lulc_df.empty:
             raw_wq_df, available_wq = prepare_raw_wq_data_with_diagnostics(WQ_CSV, DIAGNOSTICS_DIR)
             
-            # Run temporal bootstrap with FDR correction
             corr_df = run_temporal_bootstrap_analysis(lulc_df, raw_wq_df, available_wq)
             
             if not corr_df.empty:
-                # Save results
-                # Renaming to match what other scripts might expect or clearly mark as FDR qualified
-                # The user's goal was 'Table_Temporal_Bootstrap_FINAL.csv' for the plot script.
-                # I will save as BOTH for compatibility.
-                
                 full_output = os.path.join(OUTPUT_DIR, 'Table_Temporal_Bootstrap_FDR_Corrected.csv')
                 corr_df.to_csv(full_output, index=False)
-                
-                # Compatibility save
                 corr_df.to_csv(os.path.join(OUTPUT_DIR, 'Table_Temporal_Bootstrap_FINAL.csv'), index=False)
-                
                 print(f"\nSaved: {full_output}")
                 
-                # Identify optimal scales
                 optimal_output = os.path.join(OUTPUT_DIR, 'Table_Optimal_Scales_FDR.csv')
-                optimal_df = identify_optimal_scales(corr_df, optimal_output)
-                
-                # Create figure
-                if not optimal_df.empty:
-                    figure_output = os.path.join(APPENDIX_DIR, 'Figure_Scale_Sensitivity_Bootstrap_FDR.png')
-                    create_publication_figure(corr_df, optimal_df, figure_output)
+                identify_optimal_scales(corr_df, optimal_output)
         
-        # Final summary
         total_time = time.time() - overall_start
         
         print("\n" + "="*80)
-        print("PUBLICATION-READY ANALYSIS COMPLETE (v2 FDR)")
+        print("TEMPORAL BOOTSTRAP ANALYSIS COMPLETE")
         print("="*80)
-        print(f"\n⏱️  Total runtime: {total_time/60:.1f} minutes")
+        print(f"\nTotal runtime: {total_time/60:.1f} minutes")
         
     except Exception as e:
-        print(f"\n❌ ERROR: {e}")
+        print(f"\nERROR: {e}")
         import traceback
         traceback.print_exc()

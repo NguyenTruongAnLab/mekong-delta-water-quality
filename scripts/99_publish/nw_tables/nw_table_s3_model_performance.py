@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Supplementary Table S3 — Model Performance & Generalization
-============================================================
+Supplementary Table S3: Model Performance & Generalization
+==========================================================
 
 Computes from RAW DATA (4 panels):
 

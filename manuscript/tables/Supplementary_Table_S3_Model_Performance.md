@@ -2,10 +2,10 @@
 
 | Parameter   |   OOB_R2_score |   CV_R2_LOSO |   Spearman_rho_LOSO |   RMSE_LOSO |   N_Perm_Significant |   N_samples |
 |:------------|---------------:|-------------:|--------------------:|------------:|---------------------:|------------:|
-| COD         |          0.121 |       -0.158 |               0.324 |       7.192 |                    6 |         120 |
+| COD         |          0.123 |       -0.159 |               0.324 |       7.193 |                    6 |         120 |
 | DO          |          0.275 |       -0.120 |               0.356 |       0.962 |                    6 |         120 |
-| NH4-N       |         -0.006 |       -0.203 |               0.088 |       0.108 |                    6 |         120 |
-| NO3-N       |          0.471 |        0.374 |               0.578 |       0.176 |                    5 |         120 |
+| NH4-N       |         -0.007 |       -0.202 |               0.090 |       0.108 |                    6 |         120 |
+| NO3-N       |          0.471 |        0.375 |               0.577 |       0.176 |                    5 |         120 |
 | TSS         |          0.053 |       -0.369 |               0.146 |      62.549 |                    6 |         120 |
 
 **Panel B.** Generalization comparison (2005–2020 Ben Tre station-year master, RF + Ridge, 6-feature baseline LULC vs. 11-feature primary augmented feature sets, LOSO metrics).

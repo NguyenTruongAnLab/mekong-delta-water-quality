@@ -136,11 +136,7 @@ LULC_FEATURES = [
 # Population
 POP_FEATURES = ["pop_density"]
 
-# Hydro-climate: TR + Rain + Q_MyThuan
-# Q_branch (branch-specific discharge) was dropped per audit Part 12B because
-# the branch series are fixed-ratio splits of My Thuan (r=1.000) and provide no
-# spatial info. Instead, Q_MyThuan annual mean (z-scored) is used as a
-# year-level upstream discharge covariate for all stations.
+# Hydroclimate covariates: annual/dry-season rainfall and upstream discharge at My Thuan
 HYDRO_FEATURES = [
     "Rain_Annual_z",
     "Rain_Dry_z",
@@ -228,12 +224,6 @@ def evaluate_model(model_class, model_params, X, y, groups, name="RF"):
     r2_loso = r2_score(y, y_pred_loso)
     rmse_loso = float(np.sqrt(mean_squared_error(y, y_pred_loso)))
     rho_loso, p_loso = safe_spearman(y, y_pred_loso)
-
-    # LOYO (temporal)
-    try:
-        year_groups = X.index  # will override below
-    except Exception:
-        pass
 
     return {
         "model_name": name,
@@ -367,14 +357,13 @@ def main():
     print("PRIMARY ATTRIBUTION MODEL (Augmented: LULC + Hydro + Population)")
     print("=" * 80)
     print(f"Started: {datetime.now():%Y-%m-%d %H:%M:%S}")
-    print(f"Audit reference: Comprehensive_Audit_2026.md")
     print()
 
     # ---- Load data ----
     df = load_master_table()
     print(f"Loaded master table: {len(df)} rows, {df.shape[1]} cols")
     print(f"  Stations: {df['stationName'].nunique()}")
-    print(f"  Years: {df['year'].min()}–{df['year'].max()}")
+    print(f"  Years: {df['year'].min()}-{df['year'].max()}")
 
     # ---- Annual model ----
     print("\n" + "=" * 80)
@@ -394,7 +383,7 @@ def main():
     df_pred = df[keep_predictors].reset_index(drop=True)
     print(f"\nPredictor-complete subset: {len(df_pred)} station-years")
     print(f"  Stations: {df_pred['stationName'].nunique()}")
-    print(f"  Years: {df_pred['year'].min()}–{df_pred['year'].max()}")
+    print(f"  Years: {df_pred['year'].min()}-{df_pred['year'].max()}")
 
     groups_all = df_pred["stationName"]
 

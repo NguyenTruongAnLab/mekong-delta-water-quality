@@ -10,12 +10,13 @@ Important:
     - This script is therefore *diagnostic*, not a recommended attribution workflow.
 
 To minimize apples-to-oranges comparisons, the defaults are aligned with the
-main attribution subset (16 km buffer; complete-case 2013–2020).
+main attribution subset (16 km buffer; complete-case 2013-2020).
 """
 
 import pandas as pd
 import numpy as np
 import os
+from pathlib import Path
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score
 from sklearn.model_selection import LeaveOneGroupOut, cross_val_predict
@@ -29,9 +30,10 @@ warnings.filterwarnings('ignore')
 # ==============================================================================
 # CONFIG
 # ==============================================================================
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-WQ_FILE = os.path.join(SCRIPT_DIR, 'mekong_delta_water_quality_1985_2023.csv')
-LULC_FILE = os.path.join(SCRIPT_DIR, 'cache', 'lulc_metrics_corrected_16km.csv')
+REPO_ROOT = Path(__file__).resolve().parents[2]
+ANALYSIS_DIR = Path(__file__).resolve().parents[1]
+WQ_FILE = str(REPO_ROOT / 'data' / 'mekong_delta_water_quality_1985_2023.csv')
+LULC_FILE = str(ANALYSIS_DIR / 'cache' / 'lulc_metrics_corrected_16km.csv')
 MRC_STATIONS = ['Tan Chau', 'Can Tho', 'My Thuan', 'My Tho']
 
 # Match the main multivariate attribution subset by default
@@ -46,18 +48,18 @@ print("="*80)
 # 1. LOAD DATA
 # ==============================================================================
 print("\nLoading Data...")
-df_wq = pd.read_csv(WQ_FILE)
-df_wq['year'] = pd.to_datetime(df_wq['datetime'], errors='coerce').dt.year
-wq_annual = df_wq.groupby(['stationName', 'year']).mean(numeric_only=True).reset_index()
-
-# Load LULC
-if not os.path.exists(LULC_FILE):
-    print(f"Error: {LULC_FILE} not found.")
-    exit(1)
-df_lulc = pd.read_csv(LULC_FILE)
-
-# Merge
-df_full = pd.merge(wq_annual, df_lulc, on=['stationName', 'year'], how='inner')
+MASTER_FILE = str(ANALYSIS_DIR / "cache" / "station_year_master_latest.csv")
+if os.path.exists(WQ_FILE) and os.path.exists(LULC_FILE):
+    df_wq = pd.read_csv(WQ_FILE)
+    df_wq['year'] = pd.to_datetime(df_wq['datetime'], errors='coerce').dt.year
+    wq_annual = df_wq.groupby(['stationName', 'year']).mean(numeric_only=True).reset_index()
+    df_lulc = pd.read_csv(LULC_FILE)
+    df_full = pd.merge(wq_annual, df_lulc, on=['stationName', 'year'], how='inner')
+elif os.path.exists(MASTER_FILE):
+    df_full = pd.read_csv(MASTER_FILE)
+    df_full['COD (mg/L)'] = df_full['COD (mg/L)_annual']
+else:
+    raise FileNotFoundError(WQ_FILE)
 
 # Filter to the aligned analysis window
 df_full = df_full[(df_full['year'] >= YEAR_MIN) & (df_full['year'] <= YEAR_MAX)]

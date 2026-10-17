@@ -2,7 +2,7 @@
 ## WRTDS Flow-Normalization for MRC Stations (v3)
 ## ─────────────────────────────────────────────────────────────────
 ## Usage:
-##   Rscript run_wrtds.R              # fast mode: estimation + plots only
+##   Rscript run_wrtds.R              # fast mode: estimation + tables
 ##   Rscript run_wrtds.R --bootstrap  # full mode: adds bootstrap CIs
 ##   Rscript run_wrtds.R --station TanChau           # single station fast
 ##   Rscript run_wrtds.R --station TanChau --bootstrap # single station + bootstrap
@@ -13,6 +13,7 @@ library(EGRET)
 library(EGRETci)
 
 # ── Parse command-line args ──
+all_args   <- commandArgs(trailingOnly = FALSE)
 cli_args   <- commandArgs(trailingOnly = TRUE)
 RUN_BOOT   <- "--bootstrap" %in% cli_args
 RECACHE    <- "--recache"   %in% cli_args
@@ -22,9 +23,15 @@ if ("--station" %in% cli_args) {
   if (idx < length(cli_args)) ONLY_STN <- cli_args[idx + 1]
 }
 
-data_dir <- file.path("h:/My Drive/Project/CARE projects 2024-20xx",
-                       "4. Mekong long-term/Python/JAXA/scripts",
-                       "analysis/wrtds_egret")
+file_arg <- grep("^--file=", all_args, value = TRUE)
+if (length(file_arg) > 0) {
+  script_path <- normalizePath(sub("^--file=", "", file_arg[1]), mustWork = FALSE)
+  data_dir <- dirname(script_path)
+} else if (dir.exists("analysis/wrtds_egret")) {
+  data_dir <- normalizePath("analysis/wrtds_egret", mustWork = FALSE)
+} else {
+  data_dir <- getwd()
+}
 out_dir  <- file.path(data_dir, "outputs")
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
@@ -145,13 +152,6 @@ for (stn in stations) {
     # ── Merge into eList (populates Q/LogQ in Sample rows) ──
     eList <- mergeReport(INFO, Daily, Sample, verbose = FALSE)
 
-    # ── QC overview ──
-    pdf(file.path(out_dir, paste0(stn$id, "_", par$code, "_DataOverview.pdf")),
-        width = 10, height = 8)
-    tryCatch(multiPlotDataOverview(eList),
-             error = function(e) cat(sprintf("  Note: overview skipped (%s)\n", e$message)))
-    dev.off()
-
     # ── Model estimation (with RDS caching) ──
     rds_path <- file.path(out_dir, paste0(stn$id, "_", par$code, "_eList.rds"))
     if (!RECACHE && file.exists(rds_path)) {
@@ -169,41 +169,6 @@ for (stn in stations) {
       saveRDS(eList, rds_path)
       cat(sprintf("  eList cached -> %s\n", basename(rds_path)))
     }
-
-    # ── Plots ──
-    pdf(file.path(out_dir, paste0(stn$id, "_", par$code, "_FlowNorm_Conc.pdf")),
-        width = 8, height = 5)
-    plotConcHist(eList, yearStart = 1985, yearEnd = 2023)
-    dev.off()
-
-    # Kalman plot — no yearStart/yearEnd args (function signature: eList, sideBySide, fluxUnit, usgsStyle)
-    pdf(file.path(out_dir, paste0(stn$id, "_", par$code, "_Kalman_Conc.pdf")),
-        width = 8, height = 5)
-    tryCatch(plotWRTDSKalman(eList),
-             error = function(e) cat(sprintf("  Note: Kalman plot skipped (%s)\n", e$message)))
-    dev.off()
-
-    pdf(file.path(out_dir, paste0(stn$id, "_", par$code, "_FlowNorm_Flux.pdf")),
-        width = 8, height = 5)
-    plotFluxHist(eList, yearStart = 1985, yearEnd = 2023, fluxUnit = 6)
-    dev.off()
-
-    # C-Q contour
-    pdf(file.path(out_dir, paste0(stn$id, "_", par$code, "_CQ_Contour.pdf")),
-        width = 8, height = 6)
-    tryCatch(plotContours(eList, yearStart = 1985, yearEnd = 2023),
-             error = function(e) cat(sprintf("  Note: contour skipped (%s)\n", e$message)))
-    dev.off()
-
-    # Difference contour (Phase 1 vs Phase 2 midpoints)
-    pdf(file.path(out_dir, paste0(stn$id, "_", par$code, "_DiffContour.pdf")),
-        width = 8, height = 6)
-    tryCatch(plotDiffContours(eList, year0 = 1995, year1 = 2015,
-                              qBottom = 500, qTop = 25000),
-             error = function(e) cat(sprintf("  Note: diff contour skipped (%s)\n", e$message)))
-    dev.off()
-
-    cat("  Plots saved.\n")
 
     # ── runGroups: Phase comparison ──
     # windowSide=0 for stationary flow normalization
@@ -255,16 +220,6 @@ for (stn in stations) {
                 file.path(out_dir, paste0(stn$id, "_", par$code, "_PairResults.csv")),
                 row.names = FALSE)
     }
-
-    # ── Dry-season analysis (Nov-Apr) ── 
-    # Uses setPA on existing surface — no modelEstimation re-fit needed
-    cat("  Generating dry-season (Nov-Apr) plot from existing surface...\n")
-    eList_dry <- setPA(eList, paStart = 11, paLong = 6)
-    pdf(file.path(out_dir, paste0(stn$id, "_", par$code, "_DrySeason_FN_Conc.pdf")),
-        width = 8, height = 5)
-    tryCatch(plotConcHist(eList_dry, yearStart = 1985, yearEnd = 2023),
-             error = function(e) cat(sprintf("  Note: dry-season plot failed (%s)\n", e$message)))
-    dev.off()
 
     # ── Bootstrap (only in --bootstrap mode) ──
     if (RUN_BOOT) {

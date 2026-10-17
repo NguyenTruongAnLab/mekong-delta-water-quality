@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Supplementary Table S4 — COD Attribution Robustness Checks
-==========================================================
+Supplementary Table S4: COD Attribution Robustness Checks
+=========================================================
 
 Computes from RAW DATA (2 panels):
 

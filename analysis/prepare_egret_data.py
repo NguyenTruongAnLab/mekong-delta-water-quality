@@ -11,7 +11,7 @@ import pandas as pd
 from pathlib import Path
 
 # Paths
-ROOT = Path(r"h:\My Drive\Project\CARE projects 2024-20xx\4. Mekong long-term\Python\JAXA\scripts")
+ROOT = Path(__file__).resolve().parents[1]
 WQ_CSV = ROOT / "data" / "mekong_delta_water_quality_1985_2023.csv"
 Q_CSV = ROOT / "data" / "hydrology" / "outputs" / "final_datasets" / "Mekong_Delta_Gold_Standard_Master_1985_2025.csv"
 OUT_DIR = ROOT / "analysis" / "wrtds_egret"

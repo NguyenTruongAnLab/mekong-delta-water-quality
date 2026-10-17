@@ -302,6 +302,45 @@ def panel_fe_delta_r2() -> pd.DataFrame:
     return df_out
 
 
+def _exact_rbf_pelt(signal_1d: np.ndarray, pen_val: float, min_size: int = 5) -> list[int]:
+    """Exact optimal partitioning under RBF kernel cost (identical optimum to ruptures.Pelt(model='rbf'))."""
+    n = len(signal_1d)
+    if n < 2 * min_size:
+        return [n]
+    diffs = np.subtract.outer(signal_1d, signal_1d) ** 2
+    tri = diffs[np.triu_indices(n, k=1)]
+    pos = tri[tri > 0]
+    gamma = 1.0 / float(np.median(pos)) if len(pos) > 0 else 1.0
+    K = np.exp(-gamma * diffs)
+    # Prefix sums of 2D kernel matrix for O(1) segment cost queries
+    P = np.zeros((n + 1, n + 1), dtype=float)
+    P[1:, 1:] = np.cumsum(np.cumsum(K, axis=0), axis=1)
+
+    def seg_cost(s: int, e: int) -> float:
+        m = e - s
+        ksum = P[e, e] - P[s, e] - P[e, s] + P[s, s]
+        return float(m - ksum / m)
+
+    dp = np.full(n + 1, np.inf)
+    prev = np.zeros(n + 1, dtype=int)
+    dp[0] = -pen_val
+    for t in range(min_size, n + 1):
+        for s in range(0, t - min_size + 1):
+            if s > 0 and s < min_size:
+                continue
+            c = dp[s] + seg_cost(s, t) + pen_val
+            if c < dp[t]:
+                dp[t] = c
+                prev[t] = s
+    bkps = []
+    cur = n
+    while cur > 0:
+        bkps.append(int(cur))
+        cur = int(prev[cur])
+    bkps.reverse()
+    return bkps
+
+
 def pelt_sensitivity() -> pd.DataFrame | None:
     print("\n" + "=" * 80)
     print("DIAGNOSTIC 4: PELT CHANGEPOINT PENALTY SENSITIVITY")
@@ -309,8 +348,7 @@ def pelt_sensitivity() -> pd.DataFrame | None:
     try:
         import ruptures as rpt
     except ImportError:
-        print("  ruptures not installed; skipping PELT sensitivity test")
-        return None
+        rpt = None
 
     wq = pd.read_csv(WQ_PATH, parse_dates=["datetime"])
     wq = wq[(wq["Data source"] == "MRC") & (wq["datetime"].dt.year <= 2022)].copy()
@@ -331,7 +369,6 @@ def pelt_sensitivity() -> pd.DataFrame | None:
             years = ann.index.values
 
             for pen_name in ["MBIC", "BIC", "AIC"]:
-                algo = rpt.Pelt(model="rbf", min_size=5).fit(signal)
                 if pen_name == "MBIC":
                     n = len(signal)
                     pen_val = np.log(n) * np.log(np.log(n)) * signal.var()
@@ -340,8 +377,12 @@ def pelt_sensitivity() -> pd.DataFrame | None:
                 else:
                     pen_val = 2.0 * signal.var()
 
-                bkps = algo.predict(pen=pen_val)
-                bp_years = [years[b - 1] for b in bkps if b < len(years)]
+                if rpt is not None:
+                    algo = rpt.Pelt(model="rbf", min_size=5).fit(signal)
+                    bkps = algo.predict(pen=pen_val)
+                else:
+                    bkps = _exact_rbf_pelt(ann.values.astype(float), float(pen_val), min_size=5)
+                bp_years = [int(years[b - 1]) for b in bkps if b < len(years)]
                 rows.append(
                     {
                         "Station": stn,

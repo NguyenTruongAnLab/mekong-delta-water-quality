@@ -3,7 +3,7 @@
 Purpose
 -------
 Centralize how we derive annual/seasonal discharge and rainfall covariates for
-model robustness tests (CEE reviewer-facing). This avoids ad-hoc logic across
+model robustness tests. This avoids ad-hoc logic across
 scripts and makes joins deterministic.
 
 Authoritative input (project-internal):

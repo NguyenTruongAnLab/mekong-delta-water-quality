@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
 """analyze_cod_shap_robustness.py
 
-Reviewer4 robustness check:
-- RF + SHAP is used for *attribution*, but reviewers may question modest/negative
-  station-held-out CV skill.
-
-This script tests whether the *ranking* of key LULC predictors is stable across
+Tests whether the ranking of key LULC predictors is stable across
 alternative COD response formulations:
   1) COD concentration (mg/L)
   2) COD load (tons/day) using branch discharge proxies
@@ -18,18 +14,25 @@ Notes
 -----
 - Discharge for Ben Tre stations is proxy-based at branch/year resolution.
 - Discharge + rainfall covariates are derived from the Gold Standard hydrology master
-    via `analysis.lib.hydro_ingest` to keep aggregation/join rules consistent.
+  via `analysis.lib.hydro_ingest` to keep aggregation/join rules consistent.
 - Flow-normalization is a diagnostic (not a calibrated hydrological correction).
 """
 
 from __future__ import annotations
 
 import os
+import sys
+from pathlib import Path
 from typing import Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+ANALYSIS_DIR = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 try:
     from analysis.lib.hydro_ingest import HydroClimateColumns, join_branch_hydroclimate
@@ -44,12 +47,11 @@ except ImportError as e:
     ) from e
 
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-OUTPUT_DIR = os.path.join(SCRIPT_DIR, "analysis_outputs")
+OUTPUT_DIR = str(ANALYSIS_DIR / "analysis_outputs")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-WQ_FILE = os.path.join(SCRIPT_DIR, "mekong_delta_water_quality_1985_2023.csv")
-LULC_FILE = os.path.join(SCRIPT_DIR, "cache", "lulc_metrics_corrected_16km.csv")
+WQ_FILE = str(REPO_ROOT / "data" / "mekong_delta_water_quality_1985_2023.csv")
+LULC_FILE = str(ANALYSIS_DIR / "cache" / "lulc_metrics_corrected_16km.csv")
 
 TARGET = "COD (mg/L)"
 
@@ -59,42 +61,48 @@ def _load_tons_day(c_mg_l: float, q_m3_s: float) -> float:
 
 
 def load_data() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    for fp in [WQ_FILE, LULC_FILE]:
-        if not os.path.exists(fp):
-            raise FileNotFoundError(fp)
+    master_file = str(ANALYSIS_DIR / "cache" / "station_year_master_latest.csv")
+    if os.path.exists(WQ_FILE) and os.path.exists(LULC_FILE):
+        df_wq = pd.read_csv(WQ_FILE)
+        df_wq["year"] = pd.to_datetime(df_wq["datetime"], errors="coerce").dt.year
+        df_lulc = pd.read_csv(LULC_FILE)
+        return df_wq, df_lulc, pd.DataFrame()
+    if os.path.exists(master_file):
+        master = pd.read_csv(master_file)
+        return pd.DataFrame(), pd.DataFrame(), master
+    raise FileNotFoundError(WQ_FILE)
 
-    df_wq = pd.read_csv(WQ_FILE)
-    df_wq["year"] = pd.to_datetime(df_wq["datetime"], errors="coerce").dt.year
 
-    df_lulc = pd.read_csv(LULC_FILE)
+def build_bentre_station_year(df_wq: pd.DataFrame, df_lulc: pd.DataFrame, master: pd.DataFrame | None = None) -> pd.DataFrame:
+    if master is not None and not master.empty:
+        merged = master[(master["year"] >= 2013) & (master["year"] <= 2020)].copy()
+        merged = merged[merged["stationName"].astype(str).str.match(r"^(HL|CC|MT|BL)\d{2}$")].copy()
+        merged[TARGET] = merged["COD (mg/L)_annual"]
+        merged["Salinity"] = merged["Salinity_annual"]
+        merged["Q_MyThuan_m3s"] = merged["Q_MyThuan_AnnualMean_m3s"]
+    else:
+        # Annual mean concentrations
+        wq_annual = (
+            df_wq.groupby(["stationName", "River", "year"], as_index=False)
+            .mean(numeric_only=True)
+        )
 
-    # Hydro is joined later via Gold Standard (branch + year).
-    return df_wq, df_lulc, pd.DataFrame()
+        if TARGET not in wq_annual.columns:
+            raise ValueError(f"Missing {TARGET} in water quality annual table")
 
+        # Merge with LULC
+        merged = pd.merge(wq_annual, df_lulc, on=["stationName", "year"], how="inner")
 
-def build_bentre_station_year(df_wq: pd.DataFrame, df_lulc: pd.DataFrame) -> pd.DataFrame:
-    # Annual mean concentrations
-    wq_annual = (
-        df_wq.groupby(["stationName", "River", "year"], as_index=False)
-        .mean(numeric_only=True)
-    )
+        # Match the main attribution window
+        merged = merged[(merged["year"] >= 2013) & (merged["year"] <= 2020)].copy()
 
-    if TARGET not in wq_annual.columns:
-        raise ValueError(f"Missing {TARGET} in water quality annual table")
+        # Ben Tre station IDs
+        merged = merged[merged["stationName"].astype(str).str.match(r"^(HL|CC|MT|BL)\d{2}$")].copy()
 
-    # Merge with LULC
-    merged = pd.merge(wq_annual, df_lulc, on=["stationName", "year"], how="inner")
-
-    # Match the main attribution window
-    merged = merged[(merged["year"] >= 2013) & (merged["year"] <= 2020)].copy()
-
-    # Ben Tre station IDs
-    merged = merged[merged["stationName"].astype(str).str.match(r"^(HL|CC|MT|BL)\d{2}$")].copy()
-
-    # Join My Thuan mainstem annual discharge from Gold Standard.
-    h = join_branch_hydroclimate(merged[["stationName", "year"]].copy())
-    hcols = HydroClimateColumns()
-    merged["Q_MyThuan_m3s"] = h[hcols.q_mythuan_annual].values
+        # Join My Thuan mainstem annual discharge from Gold Standard.
+        h = join_branch_hydroclimate(merged[["stationName", "year"]].copy())
+        hcols = HydroClimateColumns()
+        merged["Q_MyThuan_m3s"] = h[hcols.q_mythuan_annual].values
 
     merged = merged.dropna(subset=[TARGET, "Q_MyThuan_m3s"]).copy()
 
@@ -152,8 +160,8 @@ def shap_rankings(df: pd.DataFrame, y_col: str, feature_cols: List[str], random_
 
 
 def main() -> None:
-    df_wq, df_lulc, _ = load_data()
-    df = build_bentre_station_year(df_wq, df_lulc)
+    df_wq, df_lulc, master = load_data()
+    df = build_bentre_station_year(df_wq, df_lulc, master)
 
     # Match the manuscript baseline predictor set used in figure_rda_shap.py
     candidate_cols = [

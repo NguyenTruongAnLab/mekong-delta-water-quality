@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Supplementary Table S5 — Panel Fixed-Effects Regression for COD & Sensitivity Suite
-===================================================================================
+Supplementary Table S5: Panel Fixed-Effects Regression for COD & Sensitivity Suite
+==================================================================================
 
 Computes from RAW DATA / Station-Year Master (2005–2020, 19 Ben Tre stations):
   1. Primary Confirmatory Station Fixed-Effects Models (N = 213):

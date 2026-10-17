@@ -1,29 +1,31 @@
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 from scipy import stats
 import os
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+ANALYSIS_DIR = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 try:
     from analysis.lib.gold_standard_hydro import load_gold_standard
 except ModuleNotFoundError:
     from lib.gold_standard_hydro import load_gold_standard
 
-# Paths (resolve relative to this script for robustness)
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-WQ_PATH = os.path.join(SCRIPT_DIR, "mekong_delta_water_quality_1985_2023.csv")
-DISCHARGE_PATH = os.path.join(
-    SCRIPT_DIR,
-    "..",
-    "data",
-    "hydrology",
-    "outputs",
-    "final_datasets",
-    "Mekong_Delta_Gold_Standard_Master_1985_2025.csv",
+WQ_PATH = str(REPO_ROOT / "data" / "mekong_delta_water_quality_1985_2023.csv")
+DISCHARGE_PATH = str(
+    REPO_ROOT
+    / "data"
+    / "hydrology"
+    / "outputs"
+    / "final_datasets"
+    / "Mekong_Delta_Gold_Standard_Master_1985_2025.csv"
 )
-OUTPUT_DIR = os.path.join(SCRIPT_DIR, "analysis_outputs")
+OUTPUT_DIR = str(ANALYSIS_DIR / "analysis_outputs")
 
 if not os.path.exists(OUTPUT_DIR):
     os.makedirs(OUTPUT_DIR)
@@ -185,61 +187,7 @@ def analyze_trends(df):
             
     return pd.DataFrame(results)
 
-def plot_provincial_loads(df):
-    """
-    Visualize Load Trends for key provincial stations to confirm 'Urban Masking' hypothesis.
-    Selects representative stations from each branch.
-    """
-    print("\nGenerating Provincial Load Trend Figure...")
-    
-    # Representative stations showing the effect using the new Q_Specific logic
-    # Ham Luong (Aquaculture), My Tho (Urban), Co Chien (Urban/Mixed)
-    rep_stations = ['HL04', 'CC02', 'MT02'] 
-    
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-    
-    for idx, station in enumerate(rep_stations):
-        ax = axes[idx]
-        st_data = df[df['stationName'] == station].copy()
-        
-        if len(st_data) < 5: 
-            ax.text(0.5, 0.5, "Insufficient Data", ha='center')
-            continue
-            
-        st_data['year'] = pd.to_datetime(st_data['Date']).dt.year
-        # Group by year
-        annual = st_data.groupby('year')[['COD Load (tons/day)', 'Q_Specific']].mean()
-        annual = annual.replace([np.inf, -np.inf], np.nan).dropna(subset=['COD Load (tons/day)'])
-        if annual.shape[0] < 2:
-            ax.text(0.5, 0.5, "Insufficient Data", ha='center')
-            continue
-        
-        # Plot Load
-        ax.plot(annual.index, annual['COD Load (tons/day)'], marker='o', color='purple', linewidth=2, label='COD Load')
-        
-        # Trendline
-        try:
-            x = annual.index.to_numpy(dtype=float)
-            y = annual['COD Load (tons/day)'].to_numpy(dtype=float)
-            z = np.polyfit(x, y, 1)
-            p = np.poly1d(z)
-            ax.plot(annual.index, p(x), "k--", alpha=0.7, label=f"Trend: {z[0]:+.2f} t/d/yr")
-        except Exception:
-            # If polyfit fails (rare numerical issues), skip trendline but keep the series plot.
-            pass
-        
-        ax.set_title(f"Station {station} (Provincial)\nOrganic Load Trend", fontweight='bold')
-        ax.set_xlabel("Year")
-        ax.set_ylabel("COD Load (tons/day)")
-        ax.grid(True, alpha=0.3)
-        ax.legend()
-        
-    plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, 'Figure_Provincial_Load_Trends.png'), dpi=300)
-    print("✓ Saved Figure_Provincial_Load_Trends.png")
-
-def plot_defense(df_res):
-    # Create valid table for manuscript
+def save_trend_summary(df_res):
     df_res['Conc_Trend_Sig'] = df_res['Conc_P'].apply(lambda x: '*' if x < 0.05 else 'ns')
     df_res['Load_Trend_Sig'] = df_res['Load_P'].apply(lambda x: '*' if x < 0.05 else 'ns')
     
@@ -248,108 +196,11 @@ def plot_defense(df_res):
     print(f"Saved trend comparison to {out_path}")
     print(df_res[['Station', 'Parameter', 'Conc_Trend', 'Load_Trend', 'Corr_Conc_Flow', 'Dilution_Effect']].head())
 
-def analyze_hysteresis_and_cq(df):
-    """
-    Generate CEE-Strategy 1 Figures:
-    1. Hysteresis Loop: Annual Mean Q vs Annual Mean COD
-    2. C-Q Relationships: Scatter plot by Phase
-    """
-    print("\nGenerating Hysteresis and C-Q Analysis...")
-    stations = ['Tan Chau', 'Can Tho', 'My Thuan', 'My Tho']
-    
-    # Prepare Data
-    df['year'] = pd.to_datetime(df['Date']).dt.year
-    df['Phase'] = df['year'].apply(lambda y: 'Phase 1 (1985-2004)' if y < 2005 else 'Phase 2 (2005-2022)')
-    
-    # 1. HYSTERESIS (Annual Scale)
-    # Use Q_Specific for correct station hydrology
-    annual = df.groupby(['stationName', 'year']).agg({
-        'Q_Specific': 'mean',
-        'COD (mg/L)': 'mean'
-    }).reset_index()
-    
-    fig, axes = plt.subplots(2, 2, figsize=(12, 10))
-    axes = axes.flatten()
-    
-    for idx, station in enumerate(stations):
-        ax = axes[idx]
-        st_data = annual[annual['stationName'] == station].sort_values('year')
-        if len(st_data) < 5: continue
-        
-        # Plot Loop
-        sc = ax.scatter(st_data['Q_Specific'], st_data['COD (mg/L)'], c=st_data['year'], cmap='viridis', zorder=2)
-        ax.plot(st_data['Q_Specific'], st_data['COD (mg/L)'], color='gray', alpha=0.5, linewidth=1, zorder=1)
-        
-        # Annotate Start/End/Regime Shift
-        for y in [st_data['year'].min(), 2004, st_data['year'].max()]:
-            row = st_data[st_data['year'] == y]
-            if not row.empty:
-                ax.text(row['Q_Specific'].values[0], row['COD (mg/L)'].values[0], str(y), 
-                       fontsize=8, fontweight='bold')
-        
-        ax.set_title(station, fontweight='bold')
-        ax.set_xlabel('Annual Mean Discharge (m3/s)')
-        ax.set_ylabel('Annual Mean COD (mg/L)')
-        ax.grid(True, alpha=0.3)
-    
-    plt.tight_layout()
-    plt.colorbar(sc, ax=axes, label='Year')
-    plt.savefig(os.path.join(OUTPUT_DIR, 'Figure_CEE_Hysteresis_Loop.png'), dpi=300)
-    print("✓ Saved Figure_CEE_Hysteresis_Loop.png")
-
-    # 2. C-Q SCATTER (Monthly/Sample Scale)
-    fig2, axes2 = plt.subplots(2, 2, figsize=(12, 10))
-    axes2 = axes2.flatten()
-    
-    for idx, station in enumerate(stations):
-        ax = axes2[idx]
-        st_data = df[df['stationName'] == station].copy()
-        
-        # Filter outliers for plot clarity
-        st_data = st_data[st_data['COD (mg/L)'] < 50] 
-        st_data = st_data.dropna(subset=['Q_Specific', 'COD (mg/L)'])
-        
-        # Plot by Phase
-        for phase, color in [('Phase 1 (1985-2004)', 'blue'), ('Phase 2 (2005-2022)', 'red')]:
-            subset = st_data[st_data['Phase'] == phase]
-            if len(subset) > 5:
-                # Scatter
-                ax.scatter(subset['Q_Specific'], subset['COD (mg/L)'], label=phase, alpha=0.4, s=15, color=color)
-                
-                # Trendline
-                lr = stats.linregress(subset['Q_Specific'], subset['COD (mg/L)'])
-                slope = float(lr[0])  # type: ignore[arg-type]
-                intercept = float(lr[1])  # type: ignore[arg-type]
-                x_vals = np.array([subset['Q_Specific'].min(), subset['Q_Specific'].max()])
-                ax.plot(x_vals, slope*x_vals + intercept, color=color, linewidth=2, linestyle='--')
-                
-                # Annotate Slope
-                ax.text(0.05, 0.9 if phase.startswith('Phase 1') else 0.8, 
-                       f"{phase.split(' ')[0]}: Slope={slope*10000:.2f}e-4", 
-                       transform=ax.transAxes, color=color, fontweight='bold')
-
-        ax.set_title(f"{station}: C-Q Relationship", fontweight='bold')
-        ax.set_xlabel('Daily Discharge (m3/s)')
-        ax.set_ylabel('COD (mg/L)')
-        ax.legend()
-        ax.grid(True, alpha=0.3)
-        
-    plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, 'Figure_CEE_CQ_Relationships.png'), dpi=300)
-    print("✓ Saved Figure_CEE_CQ_Relationships.png")
-
 def main():
     df = load_data()
     df = calculate_loads(df)
-    
-    # Run CEE Analysis
-    analyze_hysteresis_and_cq(df)
-    
     df_trends = analyze_trends(df)
-    plot_defense(df_trends)
-    plot_provincial_loads(df)
-    
-    # Save processed dataframe for verification
+    save_trend_summary(df_trends)
     df.to_csv(os.path.join(OUTPUT_DIR, "VMD_WQ_Loads_Calculated.csv"), index=False)
 
 if __name__ == "__main__":

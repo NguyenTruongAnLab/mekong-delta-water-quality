@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """analyze_cod_variance_partitioning.py
 
-Reviewer4 request: quantify how much of COD variability is explained by
-hydrodynamic covariates vs LULC predictors, and by their combination.
+Quantifies how much of COD variability is explained by hydrodynamic covariates
+vs LULC predictors, and by their combination.
 
-This script computes a *station-held-out* diagnostic (Leave-One-Station-Out CV)
-for COD in the Ben Tre network (2005–2020, using year-level hydro covariates).
+This script computes a station-held-out diagnostic (Leave-One-Station-Out CV)
+for COD in the Ben Tre network (2005-2020, using year-level hydro covariates).
 
 We compare three predictor sets:
   1) LULC-only (baseline attribution predictors)
@@ -19,14 +19,14 @@ Notes
 -----
 - This is not causal variance decomposition.
 - The LOSO R^2 here is a strict generalization diagnostic and can be negative.
-  The relative ordering (hydro vs LULC vs combined) is intended to support
-  reviewer-facing statements like: "hydrodynamics are necessary but not
-  sufficient; LULC adds incremental explanatory power".
+  The relative ordering (hydro vs LULC vs combined) evaluates whether LULC adds
+  incremental explanatory power beyond hydrodynamic covariates.
 """
 
 from __future__ import annotations
 
 import os
+import sys
 from typing import Dict, List, Tuple
 
 import numpy as np
@@ -42,6 +42,8 @@ from sklearn.metrics import r2_score, mean_squared_error
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, os.pardir, os.pardir))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 OUTPUT_DIR = os.path.join(ROOT_DIR, "analysis", "analysis_outputs")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -68,7 +70,6 @@ def _load_tidal_range_proxy() -> Dict[str, float]:
     tr = pd.read_csv(TIDAL_FILE)
     tr_map = dict(zip(tr["Station"], tr["Mean_Tidal_Range_m"]))
 
-    # These proxies follow the manuscript convention used in figure_rda_shap.py
     return {
         "HL": float(tr_map.get("Vam_Kenh", np.nan)),
         "CC": float(tr_map.get("Vam_Kenh", np.nan)),
@@ -78,42 +79,47 @@ def _load_tidal_range_proxy() -> Dict[str, float]:
 
 
 def _prepare_dataset() -> pd.DataFrame:
-    for fp in [WQ_FILE, LULC_FILE]:
-        if not os.path.exists(fp):
-            raise FileNotFoundError(fp)
+    master_file = os.path.join(ROOT_DIR, "analysis", "cache", "station_year_master_latest.csv")
+    if os.path.exists(WQ_FILE) and os.path.exists(LULC_FILE):
+        df_wq = pd.read_csv(WQ_FILE)
+        df_wq["year"] = pd.to_datetime(df_wq["datetime"], errors="coerce").dt.year
 
-    df_wq = pd.read_csv(WQ_FILE)
-    df_wq["year"] = pd.to_datetime(df_wq["datetime"], errors="coerce").dt.year
+        wq_annual = (
+            df_wq.groupby(["stationName", "River", "year"], as_index=False)
+            .mean(numeric_only=True)
+        )
 
-    wq_annual = (
-        df_wq.groupby(["stationName", "River", "year"], as_index=False)
-        .mean(numeric_only=True)
-    )
+        if TARGET not in wq_annual.columns:
+            raise ValueError(f"Missing {TARGET} in annual WQ table")
 
-    if TARGET not in wq_annual.columns:
-        raise ValueError(f"Missing {TARGET} in annual WQ table")
+        df_lulc = pd.read_csv(LULC_FILE)
+        df = pd.merge(wq_annual, df_lulc, on=["stationName", "year"], how="inner")
 
-    df_lulc = pd.read_csv(LULC_FILE)
-    df = pd.merge(wq_annual, df_lulc, on=["stationName", "year"], how="inner")
+        df = df[(df["year"] >= YEAR_MIN) & (df["year"] <= YEAR_MAX)].copy()
+        df = df[df["stationName"].astype(str).str.match(r"^(HL|CC|MT|BL)\d{2}$")].copy()
 
-    df = df[(df["year"] >= YEAR_MIN) & (df["year"] <= YEAR_MAX)].copy()
-    df = df[df["stationName"].astype(str).str.match(r"^(HL|CC|MT|BL)\d{2}$")].copy()
+        df["branch"] = df["stationName"].astype(str).str[:2]
 
-    df["branch"] = df["stationName"].astype(str).str[:2]
-
-    # Hydro-climate covariates from Gold Standard
-    # Using My Thuan mainstem Q (year-level, same for all stations) instead of
-    # branch Q (which excludes Ba Lai) — see audit Part 12B.
-    h = join_branch_hydroclimate(df[["stationName", "year"]].copy())
-    hcols = HydroClimateColumns()
-    for c in [
-        hcols.q_mythuan_annual_z,
-        hcols.q_mythuan_dry_z,
-        hcols.rain_annual_mm,
-        hcols.rain_dry_mm,
-    ]:
-        if c in h.columns:
-            df[c] = h[c].values
+        # Hydro-climate covariates from Gold Standard using My Thuan mainstem Q
+        h = join_branch_hydroclimate(df[["stationName", "year"]].copy())
+        hcols = HydroClimateColumns()
+        for c in [
+            hcols.q_mythuan_annual_z,
+            hcols.q_mythuan_dry_z,
+            hcols.rain_annual_mm,
+            hcols.rain_dry_mm,
+        ]:
+            if c in h.columns:
+                df[c] = h[c].values
+    elif os.path.exists(master_file):
+        df = pd.read_csv(master_file)
+        df = df[(df["year"] >= YEAR_MIN) & (df["year"] <= YEAR_MAX)].copy()
+        df = df[df["stationName"].astype(str).str.match(r"^(HL|CC|MT|BL)\d{2}$")].copy()
+        df[TARGET] = df["COD (mg/L)_annual"]
+        df["Salinity"] = df["Salinity_annual"]
+        df["branch"] = df["stationName"].astype(str).str[:2]
+    else:
+        raise FileNotFoundError(WQ_FILE)
 
     # Tidal range at My Thuan (year-level, from tidal decomposition)
     tr_path = os.path.join(OUTPUT_DIR, 'Table_Tidal_Range_By_Year.csv')

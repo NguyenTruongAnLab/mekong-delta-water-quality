@@ -1,17 +1,17 @@
-"""Generate station-centered population metrics in 16 km buffers (1990–2022).
+"""Generate station-centered population metrics in 16 km buffers (1990-2022).
 
-Phase 2: Population–fragmentation validation (“hidden population” test).
+Population-fragmentation validation test.
 
 This script:
   1) Builds station buffer geometries identically to
-     `analysis/generate_lulc_metrics_jaxa_aligned.py`:
-       - station coordinates from `analysis/mekong_delta_water_quality_1985_2023.csv`
+     `analysis/generators/generate_lulc_metrics_jaxa_aligned.py`:
+       - station coordinates from `data/mekong_delta_water_quality_1985_2023.csv`
        - dedupe by `stationName`
        - EPSG:4326 -> project to EPSG:32648 -> shapely buffer (km -> m)
   2) Uses the clipped Mekong Delta NetCDF population stack:
        data/Population/outputs/rasters/mekong_delta_pop_1985_2025/
          mekong_delta_pop_1985_2025.nc
-  3) For each year 1990–2022 and station buffer:
+  3) For each year 1990-2022 and station buffer:
        - population total in buffer (sum of raster pixel values)
        - buffer area (km^2) and density (persons/km^2)
   4) Joins against 16 km LULC metrics
@@ -21,17 +21,7 @@ This script:
 Outputs (deterministic):
   - analysis/analysis_outputs/population_stationbuffer_1990_2022_16km_latest.csv
   - analysis/analysis_outputs/population_fragmentation_metrics_latest.csv
-  - analysis/analysis_outputs/figure_population_vs_fragmentation_latest.png (+ .pdf)
   - analysis/analysis_outputs/figure_population_vs_fragmentation_points_latest.csv
-
-Notes on interpretation / plotting choice
----------------------------------------
-The primary plot uses *station-mean* values across 1990–2022 (inner-joined years)
-to avoid pseudoreplication from repeated station-year observations. We still
-compute and export correlations on both:
-  (a) station-year panel (larger N, repeated measures)
-  (b) station-mean panel (N = number of stations)
-so results can be cross-checked.
 """
 
 from __future__ import annotations
@@ -44,7 +34,6 @@ from typing import Iterable, cast
 import shutil
 
 import geopandas as gpd
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -125,22 +114,21 @@ class StationBuffer:
 
 
 def _repo_root() -> Path:
-    # analysis/ -> repo root
-    return Path(__file__).resolve().parents[1]
+    # analysis/generators/ -> repo root
+    return Path(__file__).resolve().parents[2]
 
 
 def _analysis_dir() -> Path:
-    return Path(__file__).resolve().parent
+    return Path(__file__).resolve().parents[1]
 
 
 def _paths() -> dict[str, Path]:
     root = _repo_root()
     analysis_dir = _analysis_dir()
 
-    stations_csv = analysis_dir / "mekong_delta_water_quality_1985_2023.csv"
+    stations_csv = root / "data" / "mekong_delta_water_quality_1985_2023.csv"
     if not stations_csv.exists():
-        # Fallbacks: some repos keep the same CSV in root/ or data/
-        for alt in [root / "mekong_delta_water_quality_1985_2023.csv", root / "data" / "mekong_delta_water_quality_1985_2023.csv"]:
+        for alt in [analysis_dir / "mekong_delta_water_quality_1985_2023.csv", root / "mekong_delta_water_quality_1985_2023.csv"]:
             if alt.exists():
                 stations_csv = alt
                 break
@@ -513,89 +501,6 @@ def build_fragmentation_metrics(
     return joined, metrics_df
 
 
-def _scatter(ax, *, x, y, xlabel: str, ylabel: str, rho: float, p: float):
-    ax.scatter(x, y, s=35, alpha=0.85, color="#1f77b4", edgecolor="white", linewidth=0.6)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    ax.grid(True, alpha=0.25)
-    txt = rf"Spearman $\rho$={rho:.2f}, $p$={_fmt_p(p)}"
-    ax.text(
-        0.02,
-        0.98,
-        txt,
-        transform=ax.transAxes,
-        ha="left",
-        va="top",
-        fontsize=10,
-        bbox=dict(boxstyle="round,pad=0.25", facecolor="white", alpha=0.9, linewidth=0.5),
-    )
-
-
-def plot_population_vs_fragmentation(
-    *,
-    joined_points: pd.DataFrame,
-    metrics_df: pd.DataFrame,
-    out_png: Path,
-    out_pdf: Path,
-    station_set_label: str = "",
-):
-    # Use station-mean panel for the figure
-    station_mean = (
-        joined_points.groupby("stationName", as_index=False)
-        .agg(
-            {
-                "pop_density": "mean",
-                "Residential_Urban_config_PD": "mean",
-                "Residential_Urban_composition_pct": "mean",
-            }
-        )
-        .reset_index(drop=True)
-    )
-
-    # Pull the matching correlations
-    m1 = metrics_df[(metrics_df["panel"] == "station_mean") & (metrics_df["y"] == "Residential_Urban_config_PD")].iloc[0]
-    m2 = metrics_df[(metrics_df["panel"] == "station_mean") & (metrics_df["y"] == "Residential_Urban_composition_pct")].iloc[0]
-
-    plt.rcParams.update(
-        {
-            "figure.dpi": 200,
-            "savefig.dpi": 300,
-            "font.size": 11,
-            "axes.titlesize": 12,
-            "axes.labelsize": 11,
-        }
-    )
-
-    fig, axes = plt.subplots(1, 2, figsize=(10.5, 4.4), constrained_layout=True)
-
-    _scatter(
-        axes[0],
-        x=station_mean["pop_density"].values,
-        y=station_mean["Residential_Urban_config_PD"].values,
-        xlabel=r"Population density (persons km$^{-2}$)",
-        ylabel=r"Urban patch density (patches per 100 ha)",
-        rho=float(m1["spearman_rho"]),
-        p=float(m1["p_value"]),
-    )
-
-    _scatter(
-        axes[1],
-        x=station_mean["pop_density"].values,
-        y=station_mean["Residential_Urban_composition_pct"].values,
-        xlabel=r"Population density (persons km$^{-2}$)",
-        ylabel=r"Urban composition (%)",
-        rho=float(m2["spearman_rho"]),
-        p=float(m2["p_value"]),
-    )
-
-    suffix = f" ({station_set_label})" if station_set_label else ""
-    fig.suptitle(f"Population density vs. urban fragmentation (16 km buffers, station means){suffix}")
-    out_png.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out_png, bbox_inches="tight")
-    fig.savefig(out_pdf, bbox_inches="tight")
-    plt.close(fig)
-
-
 def main() -> int:
     paths = _paths()
     pop_nc = paths["pop_nc"]
@@ -626,7 +531,6 @@ def main() -> int:
 
     pop_metrics = compute_population_station_buffers(pop_ds=ds, buffers=buffers, years=years)
 
-    # Attach station metadata for auditability (e.g., Data source) if present
     meta = read_station_metadata(stations_csv=stations_csv)
     if "Data source" in meta.columns:
         pop_metrics = pop_metrics.merge(
@@ -640,16 +544,12 @@ def main() -> int:
     out_pop = out_dir / "population_stationbuffer_1990_2022_16km_latest.csv"
     pop_metrics.to_csv(out_pop, index=False)
 
-    # Compute correlations/exports for both station sets
     station_sets = station_sets_from_metadata(meta)
     if not station_sets["ben_tre_only"]:
-        # Avoid silently producing a mislabeled "Ben Tre-only" figure/metrics.
         if "Data source" not in meta.columns:
             raise ValueError(
-                "Ben Tre-only station set cannot be constructed because the stations CSV is missing the 'Data source' column. "
-                "Add a 'Data source' column with value 'Ben Tre' for those stations, or update the station-set logic explicitly."
+                "Ben Tre-only station set cannot be constructed because the stations CSV is missing the 'Data source' column."
             )
-        # Column exists but value filter found no stations; keep deterministic behavior.
         raise ValueError("Stations CSV includes 'Data source' but no Ben Tre stations were detected")
 
     joined_all: list[pd.DataFrame] = []
@@ -674,35 +574,9 @@ def main() -> int:
     out_points = out_dir / "figure_population_vs_fragmentation_points_latest.csv"
     joined_all_df.to_csv(out_points, index=False)
 
-    # Main figure uses Ben Tre-only station means (manuscript logic)
-    joined_bentre = joined_all_df[joined_all_df["station_set"] == "ben_tre_only"].copy()
-    metrics_bentre = metrics_all_df[metrics_all_df["station_set"] == "ben_tre_only"].copy()
-
-    out_png = out_dir / "figure_population_vs_fragmentation_latest.png"
-    out_pdf = out_dir / "figure_population_vs_fragmentation_latest.pdf"
-    plot_population_vs_fragmentation(
-        joined_points=joined_bentre,
-        metrics_df=metrics_bentre,
-        out_png=out_png,
-        out_pdf=out_pdf,
-        station_set_label="Ben Tre-only",
-    )
-
-    # Copy into manuscript folders for stable Quarto references.
-    root = _repo_root()
-    fig_dir = root / "manuscript" / "figures"
-    tbl_dir = root / "manuscript" / "tables"
-    fig_dir.mkdir(parents=True, exist_ok=True)
-    tbl_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(out_png, fig_dir / "Figure_A7_Population_vs_Fragmentation.png")
-    shutil.copyfile(out_points, tbl_dir / "Table_A7_Population_vs_Fragmentation_Points.csv")
-    shutil.copyfile(out_metrics, tbl_dir / "Table_A7_Population_vs_Fragmentation_Metrics.csv")
-
     print(f"Wrote: {out_pop}")
     print(f"Wrote: {out_metrics}")
     print(f"Wrote: {out_points}")
-    print(f"Wrote: {out_png}")
-    print(f"Wrote: {out_pdf}")
     return 0
 
 

@@ -10,20 +10,24 @@ from tqdm import tqdm
 import warnings
 import pylandstats as pls
 import gc
+from pathlib import Path
 from joblib import Parallel, delayed
 
 warnings.filterwarnings('ignore')
 
 print("8-Category Analysis (7 Main + 1 'Others')")
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+ANALYSIS_DIR = Path(__file__).resolve().parents[1]
+
 # Directories
-CACHE_DIR = "cache"
+CACHE_DIR = str(ANALYSIS_DIR / "cache")
 if not os.path.exists(CACHE_DIR):
     os.makedirs(CACHE_DIR)
 
 # Input files
-STATIONS_CSV = 'mekong_delta_water_quality_1985_2023.csv'
-LULC_RASTERS_DIR = 'MekongDelta_VLUCD_1990_2020'
+STATIONS_CSV = str(REPO_ROOT / "data" / "mekong_delta_water_quality_1985_2023.csv")
+LULC_RASTERS_DIR = str(REPO_ROOT / "data" / "landuse" / "MekongDelta_VLUCD_1990_2020")
 
 # Buffer distances (km) - 10, 15, 20, 25 km for sensitivity analysis
 BUFFER_DISTANCES_KM = [1,2,3,4,5,6,7,8,9,10,11,12,13,14, 15,16,17,18,19, 20,21,22,23,24, 25,26,28,29,30]

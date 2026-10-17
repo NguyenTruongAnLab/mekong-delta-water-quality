@@ -1,38 +1,41 @@
-"""Phase 1: LULC overlap consistency check (2017–2020).
+"""LULC overlap consistency check (2017-2020).
 
 This script:
 - Loads the study boundary (Hau + Tien study area) from a GeoPackage.
 - Summarizes category composition (area + proportions) for two products:
-  1) VLUCD 1990–2020 (using project mapping for L2/L1 codes)
-  2) MekongDelta_LULC_2017_2022 (already reclassified to IDs 1–8)
+  1) VLUCD 1990-2020 (using project mapping for L2/L1 codes)
+  2) MekongDelta_LULC_2017_2022 (already reclassified to IDs 1-8)
 - Reprojects data to EPSG:32648 (UTM Zone 48N) before computing areas.
-- Computes differences in category proportions over 2017–2020.
+- Computes differences in category proportions over 2017-2020.
 - Writes deterministic artifacts to analysis/analysis_outputs/.
 
 Outputs:
 - analysis/analysis_outputs/lulc_consistency_2017_2020_latest.csv
-- analysis/analysis_outputs/figure_lulc_consistency_2017_2020_latest.png
+- analysis/analysis_outputs/lulc_consistency_2017_2020_validation_summary_latest.csv
+- analysis/analysis_outputs/lulc_consistency_2017_2020_validation_latest.md
 """
 
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
-import shutil
 from typing import Callable, Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
 
 import geopandas as gpd
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 import rasterio
 from rasterio.mask import mask as rio_mask
 from rasterio.transform import array_bounds
 from rasterio.warp import Resampling, calculate_default_transform, reproject
 from shapely.geometry import mapping
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from analysis.lib.lulc_harmonize import (
     HARMONIZED_CATEGORIES,
@@ -215,7 +218,7 @@ def _harmonize_lulc2017(arr: np.ndarray) -> np.ndarray:
 def main() -> None:
     assert_harmonized_schema()
 
-    root = Path(__file__).resolve().parents[1]
+    root = Path(__file__).resolve().parents[2]
 
     boundary_path = root / "data" / "landuse" / "Boundary_sampling_sites.gpkg"
     vlucd_dir = root / "data" / "landuse" / "MekongDelta_VLUCD_1990_2020"
@@ -227,7 +230,6 @@ def main() -> None:
     out_csv = out_dir / "lulc_consistency_2017_2020_latest.csv"
     out_summary_csv = out_dir / "lulc_consistency_2017_2020_validation_summary_latest.csv"
     out_md = out_dir / "lulc_consistency_2017_2020_validation_latest.md"
-    out_png = out_dir / "figure_lulc_consistency_2017_2020_latest.png"
 
     # Load boundary in its native CRS.
     boundary_gdf, boundary_geom = load_study_boundary(
@@ -242,7 +244,7 @@ def main() -> None:
         vlucd_raster = vlucd_dir / f"VLUCD_L2_30m_{year}.tif"
         lulc_raster = lulc_dir / f"mekong_{year}_30m.tif"
 
-        print(f"Summarizing {year} (VLUCD)…")
+        print(f"Summarizing {year} (VLUCD)...")
         all_long.append(
             summarize_raster_category_proportions(
                 vlucd_raster,
@@ -254,7 +256,7 @@ def main() -> None:
             )
         )
 
-        print(f"Summarizing {year} (LULC_2017_2022)…")
+        print(f"Summarizing {year} (LULC_2017_2022)...")
         all_long.append(
             summarize_raster_category_proportions(
                 lulc_raster,
@@ -336,147 +338,21 @@ def main() -> None:
     overall_pass = bool(summary["pass_all_years"].all())
     worst = summary.iloc[0]
     md_lines = [
-        "# LULC overlap validation (2017–2020)",
+        "# LULC overlap validation (2017-2020)",
         "",
-        f"Thresholds: |Δ| <= {PP_THRESH:.1f} pp AND relative area diff <= {REL_AREA_THRESH*100:.0f}%.",
+        f"Thresholds: |diff| <= {PP_THRESH:.1f} pp AND relative area diff <= {REL_AREA_THRESH*100:.0f}%.",
         "",
         f"Overall result: **{'PASS' if overall_pass else 'FAIL'}**",
         "",
-        "Worst (by max |Δ|):",
+        "Worst (by max |diff|):",
         f"- Category: {worst['category']}",
-        f"- Max |Δ| (pp): {worst['max_abs_diff_pp']:.1f}",
+        f"- Max |diff| (pp): {worst['max_abs_diff_pp']:.1f}",
         f"- Max relative area diff (%): {worst['max_rel_area_diff_pct']:.1f}",
         "",
         "If FAIL, do not splice VLUCD with LULC_2017_2022 into a single continuous area/proportion series.",
     ]
     out_md.write_text("\n".join(md_lines), encoding="utf-8")
     print(f"Wrote {out_md}")
-
-    # ---- Figure ----
-    # Use a slightly reduced context to avoid title/annotation overlaps.
-    sns.set_context("talk", font_scale=0.9)
-
-    # Panel A data (build from out_df to guarantee alignment and avoid NaN-driven empty bars)
-    plot_df = out_df[["year", "category", "prop_vlucd", "prop_lulc2017"]].copy()
-    plot_df["year"] = plot_df["year"].astype(int)
-    plot_df["category"] = pd.Categorical(plot_df["category"], list(HARMONIZED_CATEGORIES), ordered=True)
-    plot_df = plot_df.melt(
-        id_vars=["year", "category"],
-        value_vars=["prop_vlucd", "prop_lulc2017"],
-        var_name="product",
-        value_name="proportion",
-    )
-    plot_df["product"] = plot_df["product"].map({"prop_vlucd": "VLUCD", "prop_lulc2017": "LULC_2017_2022"})
-    plot_df["proportion_pct"] = (plot_df["proportion"].astype(float) * 100.0).fillna(0.0)
-    plot_df = plot_df.sort_values(["year", "product", "category"])
-
-    fig = plt.figure(figsize=(16, 9))
-    gs = fig.add_gridspec(2, 1, height_ratios=[2.2, 1.2], hspace=0.25)
-
-    ax1 = fig.add_subplot(gs[0, 0])
-
-    products = ["VLUCD", "LULC_2017_2022"]
-    bar_width = 0.38
-    gap = 0.22
-
-    # x positions: for each year, two bars.
-    x_base = np.arange(len(years), dtype=float)
-    x_positions = {
-        "VLUCD": x_base - (bar_width / 2 + gap / 2),
-        "LULC_2017_2022": x_base + (bar_width / 2 + gap / 2),
-    }
-
-    # Colors (stable)
-    palette = sns.color_palette("tab10", n_colors=len(HARMONIZED_CATEGORIES))
-    color_map = {cat: palette[i] for i, cat in enumerate(HARMONIZED_CATEGORIES)}
-
-    for product in products:
-        bottom = np.zeros(len(years), dtype=float)
-        for cat in HARMONIZED_CATEGORIES:
-            vals = (
-                plot_df[(plot_df.product == product) & (plot_df.category == cat)]
-                .set_index("year")
-                .reindex(years)["proportion_pct"]
-                .fillna(0.0)
-                .values
-            )
-            vals = np.asarray(vals, dtype=float)
-            ax1.bar(
-                x_positions[product],
-                vals,
-                width=bar_width,
-                bottom=bottom,
-                color=color_map[cat],
-                edgecolor="white",
-                linewidth=0.4,
-                label=cat if product == products[0] else None,  # legend once
-            )
-            bottom += vals
-
-    ax1.set_xticks(x_base)
-    ax1.set_xticklabels([str(y) for y in years])
-    ax1.set_ylabel("Category proportion (%)")
-    ax1.set_title("A) Study-area LULC composition (harmonized 8 classes)", pad=14)
-    ax1.set_ylim(0, 105)
-
-    # Legend
-    ax1.legend(
-        title="Category",
-        bbox_to_anchor=(1.01, 1.0),
-        loc="upper left",
-        frameon=False,
-    )
-
-    # Product cue (single annotation to avoid collisions with titles).
-    ax1.text(
-        0.01,
-        0.98,
-        "Bars per year: left=VLUCD, right=LULC_2017_2022",
-        transform=ax1.transAxes,
-        ha="left",
-        va="top",
-        fontsize=10,
-    )
-
-    # Panel B heatmap
-    ax2 = fig.add_subplot(gs[1, 0])
-
-    heat = out_df.pivot(index="category", columns="year", values="abs_diff_prop")
-    heat = heat.reindex(index=list(HARMONIZED_CATEGORIES))
-
-    sns.heatmap(
-        heat * 100,
-        ax=ax2,
-        cmap="magma",
-        cbar_kws={"label": "|Δ| (percentage points)"},
-        linewidths=0.5,
-        linecolor="white",
-    )
-    ax2.set_title("B) Absolute differences in proportions (LULC_2017_2022 vs VLUCD)")
-    ax2.set_xlabel("Year")
-    ax2.set_ylabel("")
-
-    fig.suptitle(
-        "LULC overlap consistency check (2017–2020), masked to Hau+Tien study boundary",
-        y=0.98,
-    )
-    # Ensure enough headroom for suptitle + panel title, and room for the legend at right.
-    fig.subplots_adjust(top=0.90)
-
-    fig.savefig(out_png, dpi=200, bbox_inches="tight")
-    plt.close(fig)
-
-    print(f"Wrote {out_png}")
-
-    # Copy into manuscript folders for stable relative paths.
-    fig_dir = root / "manuscript" / "figures"
-    tbl_dir = root / "manuscript" / "tables"
-    fig_dir.mkdir(parents=True, exist_ok=True)
-    tbl_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(out_png, fig_dir / "Figure_A7_LULC_Product_Consistency_2017_2020.png")
-    shutil.copyfile(out_csv, tbl_dir / "Table_A7_LULC_Product_Consistency_2017_2020.csv")
-    shutil.copyfile(out_summary_csv, tbl_dir / "Table_A7_LULC_Product_Consistency_2017_2020_Summary.csv")
-    shutil.copyfile(out_md, tbl_dir / "Table_A7_LULC_Product_Consistency_2017_2020_Validation.md")
 
 
 if __name__ == "__main__":
