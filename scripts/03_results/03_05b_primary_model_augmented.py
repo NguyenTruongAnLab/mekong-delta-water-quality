@@ -16,7 +16,7 @@ Outputs:
   - analysis/analysis_outputs/primary_model_performance_latest.csv
   - analysis/analysis_outputs/primary_model_shap_latest.csv
   - analysis/analysis_outputs/primary_variance_partitioning_latest.csv
-  - analysis/analysis_outputs/primary_lme_results_latest.csv
+  - analysis/analysis_outputs/primary_lme_fixed_effects_latest.csv
   - analysis/analysis_outputs/primary_seasonal_performance_latest.csv
   - analysis/analysis_outputs/primary_model_summary_table_latest.csv
 """
@@ -669,7 +669,10 @@ def main():
 
             try:
                 lme = smf.mixedlm(formula, data=df_lme_p, groups=df_lme_p["stationName"])
-                result = lme.fit(reml=True, method="lbfgs")
+                try:
+                    result = lme.fit(reml=True, method="lbfgs")
+                except np.linalg.LinAlgError:
+                    result = lme.fit(reml=True, method="powell")
 
                 # Extract fixed effects
                 fe = result.fe_params

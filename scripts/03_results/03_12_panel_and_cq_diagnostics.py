@@ -215,6 +215,9 @@ def panel_fe_delta_r2() -> pd.DataFrame:
     print("DIAGNOSTIC 3: TWO-WAY PANEL FIXED-EFFECTS INCREMENTAL R2")
     print("=" * 80)
     import statsmodels.api as sm
+    from statsmodels.tools.sm_exceptions import SingularMatrixWarning, ValueWarning
+    warnings.simplefilter("ignore", ValueWarning)
+    warnings.simplefilter("ignore", SingularMatrixWarning)
 
     master = pd.read_csv(MASTER_PATH)
     df = master[~master["stationName"].isin(MRC)].copy()

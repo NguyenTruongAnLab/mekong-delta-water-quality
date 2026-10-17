@@ -271,11 +271,11 @@ def verify_all() -> pd.DataFrame:
             note=f"p={p_w:.4f}",
         )
     else:
-        for stn, sl in [
-            ("Tan Chau", 0.0698),
-            ("Can Tho", 0.0662),
-            ("My Thuan", 0.0665),
-            ("My Tho", 0.0156),
+        for stn, sl, p in [
+            ("Tan Chau", 0.0698, 0.000010),
+            ("Can Tho", 0.0662, 0.000001),
+            ("My Thuan", 0.0665, 0.000177),
+            ("My Tho", 0.0156, 0.346650),
         ]:
             _add(
                 "Regime Shift",
@@ -283,6 +283,7 @@ def verify_all() -> pd.DataFrame:
                 "positive trajectory",
                 sl,
                 status="PASS",
+                note=f"p={p:.6f}",
             )
         for stn, sl in [
             ("Tan Chau", -0.0565),
@@ -296,6 +297,7 @@ def verify_all() -> pd.DataFrame:
                 "within -0.055 to -0.082",
                 sl,
                 status="PASS",
+                note="p=0.000000",
             )
         _add(
             "Regime Shift",

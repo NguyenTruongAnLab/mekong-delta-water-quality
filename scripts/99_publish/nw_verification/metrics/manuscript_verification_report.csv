@@ -11,14 +11,14 @@ Regime Shift,COD post-break slope Tan Chau (annual),within 0.017 to 0.065,0.0549
 Regime Shift,COD post-break slope Can Tho (annual),within 0.017 to 0.065,0.0535,PASS,p=0.0685
 Regime Shift,COD post-break slope My Thuan (annual),within 0.017 to 0.065,0.065,PASS,p=0.2599
 Regime Shift,COD post-break slope My Tho (annual),within 0.017 to 0.065,0.0172,PASS,p=0.6540
-Regime Shift,COD post-break slope Tan Chau (monthly),positive trajectory,0.0698,PASS,
-Regime Shift,COD post-break slope Can Tho (monthly),positive trajectory,0.0662,PASS,
-Regime Shift,COD post-break slope My Thuan (monthly),positive trajectory,0.0665,PASS,
-Regime Shift,COD post-break slope My Tho (monthly),positive trajectory,0.0156,PASS,
-Regime Shift,DO post-break slope Tan Chau,within -0.055 to -0.082,-0.0565,PASS,
-Regime Shift,DO post-break slope Can Tho,within -0.055 to -0.082,-0.0545,PASS,
-Regime Shift,DO post-break slope My Thuan,within -0.055 to -0.082,-0.0824,PASS,
-Regime Shift,DO post-break slope My Tho,within -0.055 to -0.082,-0.0731,PASS,
+Regime Shift,COD post-break slope Tan Chau (monthly),positive trajectory,0.0698,PASS,p=0.000010
+Regime Shift,COD post-break slope Can Tho (monthly),positive trajectory,0.0662,PASS,p=0.000001
+Regime Shift,COD post-break slope My Thuan (monthly),positive trajectory,0.0665,PASS,p=0.000177
+Regime Shift,COD post-break slope My Tho (monthly),positive trajectory,0.0156,PASS,p=0.346650
+Regime Shift,DO post-break slope Tan Chau,within -0.055 to -0.082,-0.0565,PASS,p=0.000000
+Regime Shift,DO post-break slope Can Tho,within -0.055 to -0.082,-0.0545,PASS,p=0.000000
+Regime Shift,DO post-break slope My Thuan,within -0.055 to -0.082,-0.0824,PASS,p=0.000000
+Regime Shift,DO post-break slope My Tho,within -0.055 to -0.082,-0.0731,PASS,p=0.000000
 Regime Shift,My Thuan Dry-season COD slope,0.12,0.1223,PASS,p=0.0137
 Regime Shift,My Thuan Wet-season COD slope,non-significant,0.0361,PASS,p=0.5009
 Reactor,Tan Chau TN (mg/L) p,0.97,0.966,PASS,

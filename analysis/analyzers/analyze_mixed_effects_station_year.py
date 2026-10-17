@@ -73,17 +73,23 @@ def fit_mixedlm(df: pd.DataFrame, outcome_col: str,
     z_cols = [f"z_{c}" for c in avail]
     formula = f"Q('{outcome_col}') ~ " + " + ".join(z_cols)
 
+    import warnings
     try:
         md = smf.mixedlm(formula, sub, groups=sub["stationName"])
-        result = md.fit(reml=True, method="lbfgs")
-        fe = result.summary().tables[1]
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            try:
+                result = md.fit(reml=True, method="lbfgs")
+            except np.linalg.LinAlgError:
+                result = md.fit(reml=True, method="powell")
+            fe = result.summary().tables[1]
         # Parse
         coef_df = pd.DataFrame({
             "term": [t.replace("z_", "") if t != "Intercept" else t
                      for t in result.fe_params.index],
             "coef": result.fe_params.values,
             "se": result.bse_fe.values if hasattr(result, "bse_fe") else [np.nan]*len(result.fe_params),
-            "pvalue": result.pvalues_fe.values if hasattr(result, "pvalues_fe") else [np.nan]*len(result.fe_params),
+            "pvalue": result.pvalues.reindex(result.fe_params.index).values if hasattr(result, "pvalues") else [np.nan]*len(result.fe_params),
         })
         coef_df["outcome"] = outcome_col
 

@@ -180,28 +180,25 @@ def load_wq_raw() -> pd.DataFrame:
 def load_wq_annual(include_mrc: bool = False) -> pd.DataFrame:
     """Load annual station water quality means.
 
-    Uses raw monitoring observations when available (full Zenodo archive) and
-    falls back to the pre-aggregated station-year master table in the public
-    GitHub repository.
+    Uses the harmonized station-year master table when available and falls back
+    to aggregating raw monitoring observations if the master cache is absent.
     """
-    if WQ_PATH.exists():
-        df = load_wq_raw()
+    if MASTER_PATH.exists():
+        master = pd.read_csv(MASTER_PATH, float_precision="round_trip")
         if not include_mrc:
-            df = df[~df["stationName"].isin(MRC_STATIONS)]
-        wq_annual = df.groupby(["stationName", "year"]).mean(numeric_only=True).reset_index()
+            master = master[~master["stationName"].isin(MRC_STATIONS)].copy()
+        rename_map = {f"{v}_annual": v for v in WQ_VARS if f"{v}_annual" in master.columns}
+        if "Salinity_annual" in master.columns:
+            rename_map["Salinity_annual"] = "Salinity"
+        keep_cols = ["stationName", "year"] + list(rename_map.keys())
+        wq_annual = master[keep_cols].rename(columns=rename_map).copy()
         return wq_annual
 
-    require_file(MASTER_PATH, "Station-year master CSV")
-    master = pd.read_csv(MASTER_PATH)
+    require_file(WQ_PATH, "Water quality CSV")
+    df = load_wq_raw()
     if not include_mrc:
-        master = master[~master["stationName"].isin(MRC_STATIONS)].copy()
-    rename_map = {f"{v}_annual": v for v in WQ_VARS if f"{v}_annual" in master.columns}
-    if "Salinity_annual" in master.columns:
-        rename_map["Salinity_annual"] = "Salinity"
-    keep_cols = ["stationName", "year"] + list(rename_map.keys())
-    if "Q_branch_AnnualMean_m3s" in master.columns:
-        keep_cols.append("Q_branch_AnnualMean_m3s")
-    wq_annual = master[keep_cols].rename(columns=rename_map).copy()
+        df = df[~df["stationName"].isin(MRC_STATIONS)]
+    wq_annual = df.groupby(["stationName", "year"]).mean(numeric_only=True).reset_index()
     return wq_annual
 
 

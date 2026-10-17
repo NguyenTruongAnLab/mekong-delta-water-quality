@@ -64,7 +64,13 @@ def main() -> None:
     MRC = {"Tan Chau", "Can Tho", "My Thuan", "My Tho"}
     hcols = HydroClimateColumns()
 
-    if os.path.exists(WQ_FILE) and os.path.exists(LULC_FILE):
+    if os.path.exists(MASTER_FILE):
+        df = pd.read_csv(MASTER_FILE)
+        df = df[~df["stationName"].isin(MRC)].copy()
+        df = df[(df["year"] >= 2005) & (df["year"] <= 2020)].copy()
+        df[TARGET] = df["COD (mg/L)_annual"]
+        df["Salinity"] = df["Salinity_annual"]
+    elif os.path.exists(WQ_FILE) and os.path.exists(LULC_FILE):
         df_wq = pd.read_csv(WQ_FILE)
         df_wq["year"] = pd.to_datetime(df_wq["datetime"], errors="coerce").dt.year
         wq_annual = (
@@ -85,14 +91,8 @@ def main() -> None:
         ]:
             if c in h.columns:
                 df[c] = h[c].values
-    elif os.path.exists(MASTER_FILE):
-        df = pd.read_csv(MASTER_FILE)
-        df = df[~df["stationName"].isin(MRC)].copy()
-        df = df[(df["year"] >= 2005) & (df["year"] <= 2020)].copy()
-        df[TARGET] = df["COD (mg/L)_annual"]
-        df["Salinity"] = df["Salinity_annual"]
     else:
-        raise FileNotFoundError(WQ_FILE)
+        raise FileNotFoundError(MASTER_FILE)
 
     # Variables (intentionally small set)
     needed = [
@@ -164,20 +164,6 @@ def main() -> None:
 
         # Fit once, then evaluate multiple covariance estimators on same coefficients
         ols_model = smf.ols(formula, data=df_fit).fit()
-        model = ols_model.get_robustcov_results(cov_type="HC3")
-
-        out = pd.DataFrame({
-            "Model": model_name,
-            "term": ols_model.params.index,
-            "coef": ols_model.params.values,
-            "se_HC3": model.bse,
-            "t": model.tvalues,
-            "p": model.pvalues,
-            "N": int(model.nobs),
-            "R2": float(model.rsquared),
-            "R2_adj": float(model.rsquared_adj),
-        })
-        out_parts.append(out)
 
         # ----- Covariance robustness table -----
         terms = list(ols_model.params.index)
@@ -186,6 +172,7 @@ def main() -> None:
         # HC3
         hc3 = ols_model.get_robustcov_results(cov_type="HC3")
         bse_hc3 = pd.Series(hc3.bse, index=terms)
+        t_hc3 = pd.Series(hc3.tvalues, index=terms)
         p_hc3 = pd.Series(hc3.pvalues, index=terms)
 
         # One-way clustered SE (station / year)
@@ -214,6 +201,34 @@ def main() -> None:
         bse_tw = pd.Series(np.sqrt(np.diag(cov_tw)), index=terms)
         t_tw = params / bse_tw
         p_tw = pd.Series(2 * stats.norm.sf(np.abs(t_tw)), index=terms)
+
+        for term in terms:
+            if term == "Intercept" or term.startswith("C("):
+                continue
+            clean_term = term.replace("Q('", "").replace("')", "")
+            out_parts.append(
+                pd.DataFrame(
+                    [
+                        {
+                            "Model": model_name,
+                            "term": clean_term,
+                            "coef": round(float(params[term]), 3),
+                            "se_HC3": round(float(bse_hc3[term]), 3),
+                            "t": round(float(t_hc3[term]), 3),
+                            "p": round(float(p_hc3[term]), 3),
+                            "se_Cluster_Stn": round(float(bse_station[term]), 3),
+                            "p_Cluster_Stn": round(float(p_station[term]), 3),
+                            "se_Cluster_Yr": round(float(bse_year[term]), 3),
+                            "p_Cluster_Yr": round(float(p_year[term]), 3),
+                            "se_TwoWay": round(float(bse_tw[term]), 3),
+                            "p_TwoWay": round(float(p_tw[term]), 3),
+                            "N": int(ols_model.nobs),
+                            "R2": round(float(ols_model.rsquared), 3),
+                            "R2_adj": round(float(ols_model.rsquared_adj), 3),
+                        }
+                    ]
+                )
+            )
 
         # Long-format rows for direct SI table rendering
         cov_sets = [
