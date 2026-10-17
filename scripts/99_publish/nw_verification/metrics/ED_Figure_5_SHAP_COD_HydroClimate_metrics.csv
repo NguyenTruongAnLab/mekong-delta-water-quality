@@ -1,0 +1,16 @@
+Figure,Feature,LULC_only_SHAP,Augmented_SHAP,Model,InSample_R2,LOSO_R2,N,N_features
+ED5,Tidal range (m),0.0,1.3177,,,,,
+ED5,"Discharge (My Thuan, annual z)",0.0,0.8099,,,,,
+ED5,Rice PD,0.7413,0.5098,,,,,
+ED5,Rainfall (dry z),0.0,0.4433,,,,,
+ED5,Urban PD,1.6892,0.3977,,,,,
+ED5,Aquaculture ED,0.7076,0.3072,,,,,
+ED5,Population density,0.0,0.1628,,,,,
+ED5,Rainfall (annual z),0.0,0.1591,,,,,
+ED5,Urban %,0.4842,0.1563,,,,,
+ED5,Rice %,0.5591,0.151,,,,,
+ED5,Aquaculture %,0.2587,0.0952,,,,,
+ED5,,,,LULC-only,0.2405,0.0682,229.0,6.0
+ED5,,,,LULC+Pop,0.3015,0.1314,229.0,7.0
+ED5,,,,Hydro-only,0.2993,0.2592,229.0,4.0
+ED5,,,,Combined,0.3942,0.2281,229.0,11.0

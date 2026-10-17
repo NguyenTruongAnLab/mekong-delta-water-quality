@@ -1,0 +1,5 @@
+Figure,Parameter,Pearson_r,p_value,N_paired_years
+SI1,COD,-0.0008,0.996817,30
+SI1,DO,-0.1482,0.532933,20
+SI1,NH$_4$-N,-0.0112,0.94835,36
+SI1,NO$_3$-N,-0.2193,0.198746,36

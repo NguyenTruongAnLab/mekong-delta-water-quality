@@ -1,0 +1,9 @@
+station_set,panel,x,y,n,spearman_rho,p_value
+all_stations,station_year,pop_density,Residential_Urban_config_PD,713,-0.10333456724089236,0.00574834826441112
+all_stations,station_year,pop_density,Residential_Urban_composition_pct,713,0.3540743162053421,1.7434697321928901e-22
+all_stations,station_mean,pop_density,Residential_Urban_config_PD,23,-0.19664031620553357,0.3684991870704841
+all_stations,station_mean,pop_density,Residential_Urban_composition_pct,23,0.632411067193676,0.0012041719131890265
+ben_tre_only,station_year,pop_density,Residential_Urban_config_PD,589,-0.2504011446918199,7.156067692986258e-10
+ben_tre_only,station_year,pop_density,Residential_Urban_composition_pct,589,0.2360789534771713,6.652213114358407e-09
+ben_tre_only,station_mean,pop_density,Residential_Urban_config_PD,19,-0.4526315789473684,0.05166303542301253
+ben_tre_only,station_mean,pop_density,Residential_Urban_composition_pct,19,0.4859649122807017,0.03489835203095622

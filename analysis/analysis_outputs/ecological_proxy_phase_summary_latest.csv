@@ -1,0 +1,4 @@
+Metric,Label,DataSubset,PhaseA,PhaseB,PhaseA_median,PhaseB_median,MannWhitney_p,N_years_phaseA,N_years_phaseB
+f_red_median,Reduced-N fraction (annual median),MRC stations,Phase 1 (1985–2004),Phase 2 (2005–2022),0.04914389539637164,0.08180535228311467,0.156126292005667,20,18
+tn_tp_median,TN:TP (molar; annual median),MRC stations,Phase 1 (1985–2004),Phase 2 (2005–2022),13.403748751071507,14.476249938638505,0.6089476244742323,17,18
+din_dip_median,DIN:DIP (molar; annual median),Ben Tre stations,Early (2005–2012),Late (2013–2022),,7.742131476006755,,0,9

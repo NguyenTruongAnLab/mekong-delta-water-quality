@@ -1,0 +1,5 @@
+Figure,Cluster,Label,N_stations
+ED4,0,"G1: ↑Aquaculture, ↓Wetland",3
+ED4,1,"G2: ↑Aquaculture, ↓Wetland",4
+ED4,2,"G3: ↑Residential, ↓Rice",4
+ED4,3,"G4: ↑Aquaculture, ↓Rice",8

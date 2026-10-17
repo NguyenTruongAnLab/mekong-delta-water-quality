@@ -1,0 +1,4 @@
+Figure,Gauge,Pearson_r,p_value,N,Slope_mm_yr
+SI2,BenTre,0.7282,0.0,456,
+SI2,CHIRPS_Basin_Annual,,0.006873,38,6.9119
+SI2,ERA5_Basin_Annual,,0.027801,38,8.79

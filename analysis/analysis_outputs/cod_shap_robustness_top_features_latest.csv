@@ -1,0 +1,19 @@
+Response,Rank,Feature,MeanAbsSHAP
+COD (mg/L),1,Residential_Urban_config_PD,1.5449716511450509
+COD (mg/L),2,Rice_Cultivation_config_PD,0.8015785328426521
+COD (mg/L),3,Residential_Urban_composition_pct,0.7765224130258446
+COD (mg/L),4,Rice_Cultivation_composition_pct,0.565048534337341
+COD (mg/L),5,Aquaculture_config_ED,0.5265704277595362
+COD (mg/L),6,Aquaculture_composition_pct,0.1995684537112839
+COD_flow_norm_resid,1,Residential_Urban_config_PD,1.3959320355046343
+COD_flow_norm_resid,2,Rice_Cultivation_composition_pct,0.7807613938630341
+COD_flow_norm_resid,3,Aquaculture_config_ED,0.666083939391356
+COD_flow_norm_resid,4,Residential_Urban_composition_pct,0.5616898043920081
+COD_flow_norm_resid,5,Rice_Cultivation_config_PD,0.42449876130820496
+COD_flow_norm_resid,6,Aquaculture_composition_pct,0.25253157862635056
+COD_load_tons_day,1,Rice_Cultivation_composition_pct,233.68821951072806
+COD_load_tons_day,2,Residential_Urban_config_PD,150.4258777255339
+COD_load_tons_day,3,Aquaculture_config_ED,91.44523684567622
+COD_load_tons_day,4,Residential_Urban_composition_pct,85.64344664170038
+COD_load_tons_day,5,Aquaculture_composition_pct,64.62280667823374
+COD_load_tons_day,6,Rice_Cultivation_config_PD,47.0486118234066

@@ -1,0 +1,225 @@
+Category,Year,Mean_Composition_Pct,Raw_Value
+Rice,1990,15.23,15.2182
+Rice,1991,16.62,16.6036
+Rice,1992,12.71,12.695
+Rice,1993,13.01,12.9973
+Rice,1994,16.29,16.2517
+Rice,1995,16.72,16.6987
+Rice,1996,15.05,15.0224
+Rice,1997,13.59,13.5778
+Rice,1998,14.6,14.5944
+Rice,1999,14.02,13.9902
+Rice,2000,15.22,15.1674
+Rice,2001,16.61,16.582
+Rice,2002,16.7,16.672
+Rice,2003,14.17,14.1374
+Rice,2004,11.69,11.6749
+Rice,2005,14.94,14.9135
+Rice,2006,17.78,17.7276
+Rice,2007,16.45,16.4126
+Rice,2008,15.45,15.4004
+Rice,2009,14.41,14.3406
+Rice,2010,14.84,14.81
+Rice,2011,14.12,14.0868
+Rice,2012,14.86,14.8133
+Rice,2013,15.3,15.228
+Rice,2014,14.54,14.4916
+Rice,2015,13.74,13.7058
+Rice,2016,13.24,13.1876
+Rice,2017,12.65,12.612
+Rice,2018,11.88,11.8369
+Rice,2019,10.79,10.7669
+Rice,2020,11.41,11.3774
+Rice,change_1990_2020,-3.81,
+Upland Crops,1990,54.74,54.7043
+Upland Crops,1991,53.51,53.4725
+Upland Crops,1992,59.67,59.6098
+Upland Crops,1993,56.94,56.8825
+Upland Crops,1994,55.52,55.4033
+Upland Crops,1995,55.73,55.6637
+Upland Crops,1996,53.9,53.784
+Upland Crops,1997,54.06,54.0045
+Upland Crops,1998,53.43,53.3966
+Upland Crops,1999,54.58,54.4766
+Upland Crops,2000,55.37,55.1938
+Upland Crops,2001,53.9,53.8026
+Upland Crops,2002,53.21,53.1227
+Upland Crops,2003,55.93,55.8135
+Upland Crops,2004,60.07,59.9803
+Upland Crops,2005,55.29,55.1855
+Upland Crops,2006,50.5,50.3588
+Upland Crops,2007,52.71,52.6003
+Upland Crops,2008,54.57,54.3799
+Upland Crops,2009,55.31,55.0413
+Upland Crops,2010,54.57,54.4457
+Upland Crops,2011,54.6,54.4574
+Upland Crops,2012,54.99,54.8246
+Upland Crops,2013,54.28,54.0344
+Upland Crops,2014,54.19,54.0066
+Upland Crops,2015,54.64,54.5123
+Upland Crops,2016,54.87,54.6723
+Upland Crops,2017,55.33,55.1537
+Upland Crops,2018,55.16,54.9368
+Upland Crops,2019,56.2,56.0621
+Upland Crops,2020,54.31,54.1407
+Upland Crops,change_1990_2020,-0.42,
+Aquaculture,1990,1.2,1.1944
+Aquaculture,1991,0.54,0.5399
+Aquaculture,1992,0.38,0.378
+Aquaculture,1993,1.34,1.341
+Aquaculture,1994,0.97,0.9691
+Aquaculture,1995,0.78,0.7779
+Aquaculture,1996,1.92,1.916
+Aquaculture,1997,2.2,2.1947
+Aquaculture,1998,2.57,2.5703
+Aquaculture,1999,4.19,4.1776
+Aquaculture,2000,4.38,4.3681
+Aquaculture,2001,5.02,5.0134
+Aquaculture,2002,6.11,6.0961
+Aquaculture,2003,6.19,6.1782
+Aquaculture,2004,5.46,5.4477
+Aquaculture,2005,6.0,5.9905
+Aquaculture,2006,6.8,6.7864
+Aquaculture,2007,6.75,6.7394
+Aquaculture,2008,6.57,6.5451
+Aquaculture,2009,6.53,6.4992
+Aquaculture,2010,7.52,7.5001
+Aquaculture,2011,6.09,6.0735
+Aquaculture,2012,5.47,5.4563
+Aquaculture,2013,6.5,6.4675
+Aquaculture,2014,7.36,7.3339
+Aquaculture,2015,8.34,8.3231
+Aquaculture,2016,8.82,8.7874
+Aquaculture,2017,8.64,8.6105
+Aquaculture,2018,8.86,8.8277
+Aquaculture,2019,9.0,8.9776
+Aquaculture,2020,9.95,9.918
+Aquaculture,change_1990_2020,8.75,
+Residential,1990,0.75,0.749
+Residential,1991,1.42,1.4181
+Residential,1992,1.46,1.4552
+Residential,1993,1.41,1.4089
+Residential,1994,1.52,1.5218
+Residential,1995,0.89,0.8904
+Residential,1996,1.51,1.5082
+Residential,1997,1.68,1.6753
+Residential,1998,1.74,1.7435
+Residential,1999,2.03,2.0298
+Residential,2000,1.33,1.3214
+Residential,2001,2.23,2.2211
+Residential,2002,2.59,2.5831
+Residential,2003,2.71,2.7027
+Residential,2004,2.71,2.7015
+Residential,2005,2.27,2.2702
+Residential,2006,3.35,3.3408
+Residential,2007,3.24,3.2353
+Residential,2008,3.25,3.242
+Residential,2009,3.46,3.4439
+Residential,2010,3.21,3.2075
+Residential,2011,3.39,3.3804
+Residential,2012,3.44,3.4314
+Residential,2013,3.66,3.6388
+Residential,2014,4.01,4.0
+Residential,2015,3.96,3.9469
+Residential,2016,3.92,3.9033
+Residential,2017,4.12,4.1053
+Residential,2018,4.68,4.658
+Residential,2019,4.94,4.9289
+Residential,2020,5.89,5.8676
+Residential,change_1990_2020,5.14,
+Forest,1990,0.32,0.323
+Forest,1991,0.39,0.3932
+Forest,1992,0.13,0.1346
+Forest,1993,0.21,0.2142
+Forest,1994,0.27,0.2677
+Forest,1995,0.25,0.2517
+Forest,1996,0.29,0.2913
+Forest,1997,0.15,0.1511
+Forest,1998,0.24,0.2387
+Forest,1999,0.43,0.4273
+Forest,2000,0.31,0.3127
+Forest,2001,0.29,0.2877
+Forest,2002,0.22,0.2215
+Forest,2003,0.17,0.173
+Forest,2004,0.21,0.2049
+Forest,2005,0.22,0.2166
+Forest,2006,0.24,0.2377
+Forest,2007,0.13,0.1328
+Forest,2008,0.11,0.1131
+Forest,2009,0.12,0.118
+Forest,2010,0.25,0.2466
+Forest,2011,0.56,0.5561
+Forest,2012,0.73,0.7311
+Forest,2013,0.61,0.6086
+Forest,2014,0.24,0.2373
+Forest,2015,0.15,0.1536
+Forest,2016,0.32,0.314
+Forest,2017,0.28,0.2828
+Forest,2018,0.42,0.4169
+Forest,2019,0.57,0.57
+Forest,2020,0.36,0.3622
+Forest,change_1990_2020,0.04,
+Wetland,1990,6.66,6.6592
+Wetland,1991,6.62,6.6138
+Wetland,1992,5.87,5.8599
+Wetland,1993,6.41,6.4049
+Wetland,1994,5.95,5.9381
+Wetland,1995,6.46,6.4538
+Wetland,1996,7.18,7.1642
+Wetland,1997,7.34,7.3285
+Wetland,1998,6.84,6.8375
+Wetland,1999,4.96,4.9476
+Wetland,2000,3.32,3.3103
+Wetland,2001,2.95,2.9427
+Wetland,2002,2.48,2.4722
+Wetland,2003,2.45,2.4463
+Wetland,2004,2.07,2.0668
+Wetland,2005,2.98,2.9722
+Wetland,2006,2.9,2.8946
+Wetland,2007,2.68,2.6704
+Wetland,2008,2.33,2.3212
+Wetland,2009,2.14,2.1317
+Wetland,2010,1.69,1.6908
+Wetland,2011,2.88,2.8737
+Wetland,2012,2.62,2.6108
+Wetland,2013,1.6,1.5939
+Wetland,2014,1.59,1.5802
+Wetland,2015,1.56,1.5538
+Wetland,2016,1.69,1.6811
+Wetland,2017,1.73,1.729
+Wetland,2018,2.13,2.1166
+Wetland,2019,1.67,1.6651
+Wetland,2020,1.89,1.8824
+Wetland,change_1990_2020,-4.77,
+Water,1990,21.11,21.0953
+Water,1991,20.9,20.883
+Water,1992,19.79,19.7732
+Water,1993,20.67,20.654
+Water,1994,19.48,19.4413
+Water,1995,19.17,19.1536
+Water,1996,20.14,20.1002
+Water,1997,20.99,20.9732
+Water,1998,20.57,20.5517
+Water,1999,19.8,19.7569
+Water,2000,20.07,20.0033
+Water,2001,19.0,18.9611
+Water,2002,18.7,18.6721
+Water,2003,18.37,18.3325
+Water,2004,17.8,17.7758
+Water,2005,18.3,18.261
+Water,2006,18.43,18.3824
+Water,2007,18.03,17.9931
+Water,2008,17.71,17.6478
+Water,2009,18.03,17.9446
+Water,2010,17.91,17.8656
+Water,2011,18.36,18.3141
+Water,2012,17.89,17.8319
+Water,2013,18.06,17.9734
+Water,2014,18.07,18.012
+Water,2015,17.62,17.5792
+Water,2016,17.16,17.0945
+Water,2017,17.24,17.1874
+Water,2018,16.88,16.8108
+Water,2019,16.82,16.7818
+Water,2020,16.18,16.1317
+Water,change_1990_2020,-4.92,

@@ -1,0 +1,43 @@
+Analysis,Parameter,Station,Statistic,Phase,Estimate,CI_lo,CI_hi,N_boot
+CI_ratio,COD,Tan Chau,CI,Phase1,0.8399,0.7551,0.931,2000
+CI_ratio,COD,Tan Chau,CI,Phase2,0.4948,0.4241,0.5832,2000
+CI_ratio,COD,Tan Chau,CV_C,Phase1,0.5885,0.5361,0.6655,2000
+CI_ratio,COD,Tan Chau,CV_C,Phase2,0.3191,0.2767,0.3755,2000
+CI_ratio,COD,Tan Chau,CV_Q,Phase1,0.7009,0.6615,0.7325,2000
+CI_ratio,COD,Tan Chau,CV_Q,Phase2,0.6414,0.6115,0.6698,2000
+CI_ratio,DO,Tan Chau,CI,Phase1,0.1208,0.1007,0.1491,2000
+CI_ratio,DO,Tan Chau,CI,Phase2,0.1916,0.1698,0.2238,2000
+CI_ratio,DO,Tan Chau,CV_C,Phase1,0.0853,0.0726,0.1051,2000
+CI_ratio,DO,Tan Chau,CV_C,Phase2,0.1218,0.1076,0.141,2000
+CI_ratio,DO,Tan Chau,CV_Q,Phase1,0.7009,0.6648,0.7307,2000
+CI_ratio,DO,Tan Chau,CV_Q,Phase2,0.6414,0.6118,0.6718,2000
+CI_ratio,NH4-N,Tan Chau,CI,Phase1,1.2721,1.071,1.5409,2000
+CI_ratio,NH4-N,Tan Chau,CI,Phase2,1.1968,1.0754,1.343,2000
+CI_ratio,NH4-N,Tan Chau,CV_C,Phase1,0.9055,0.7905,1.0372,2000
+CI_ratio,NH4-N,Tan Chau,CV_C,Phase2,0.7676,0.7119,0.8307,2000
+CI_ratio,NH4-N,Tan Chau,CV_Q,Phase1,0.7009,0.6638,0.7318,2000
+CI_ratio,NH4-N,Tan Chau,CV_Q,Phase2,0.6414,0.6128,0.6713,2000
+CI_ratio,NO3-N,Tan Chau,CI,Phase1,0.8446,0.746,0.9648,2000
+CI_ratio,NO3-N,Tan Chau,CI,Phase2,1.0337,0.869,1.2731,2000
+CI_ratio,NO3-N,Tan Chau,CV_C,Phase1,0.5955,0.5249,0.6827,2000
+CI_ratio,NO3-N,Tan Chau,CV_C,Phase2,0.6697,0.5576,0.8116,2000
+CI_ratio,NO3-N,Tan Chau,CV_Q,Phase1,0.7009,0.6623,0.7299,2000
+CI_ratio,NO3-N,Tan Chau,CV_Q,Phase2,0.6414,0.6114,0.6707,2000
+Mass_balance,COD,TanChau→MyThuan,NCF_pct,Phase1,-10.94,-15.95,-2.47,2000
+Mass_balance,COD,TanChau→MyThuan,NCF_pct,Phase2,-1.43,-5.32,2.24,2000
+Mass_balance,COD,TanChau→MyThuan,Delta_NCF_pct,P2-P1,9.51,0.83,15.77,2000
+Mass_balance,NO3-N,TanChau→MyThuan,NCF_pct,Phase1,24.26,12.95,40.38,2000
+Mass_balance,NO3-N,TanChau→MyThuan,NCF_pct,Phase2,46.1,24.89,77.1,2000
+Mass_balance,NO3-N,TanChau→MyThuan,Delta_NCF_pct,P2-P1,21.84,-2.07,56.42,2000
+Mass_balance,TN,TanChau→MyThuan,NCF_pct,Phase1,0.03,-6.33,9.87,2000
+Mass_balance,TN,TanChau→MyThuan,NCF_pct,Phase2,16.34,6.16,26.94,2000
+Mass_balance,TN,TanChau→MyThuan,Delta_NCF_pct,P2-P1,16.31,3.1,29.86,2000
+Mass_balance,NH4-N,TanChau→MyThuan,NCF_pct,Phase1,-0.99,-21.99,26.04,2000
+Mass_balance,NH4-N,TanChau→MyThuan,NCF_pct,Phase2,-2.2,-20.16,28.14,2000
+Mass_balance,NH4-N,TanChau→MyThuan,Delta_NCF_pct,P2-P1,-1.21,-31.44,35.8,2000
+Mass_balance,TP,TanChau→MyThuan,NCF_pct,Phase1,-10.11,-18.79,-1.63,2000
+Mass_balance,TP,TanChau→MyThuan,NCF_pct,Phase2,-4.74,-12.83,5.28,2000
+Mass_balance,TP,TanChau→MyThuan,Delta_NCF_pct,P2-P1,5.37,-6.65,18.36,2000
+Mass_balance,TSS,TanChau→MyThuan,NCF_pct,Phase1,-30.39,-39.75,-21.94,2000
+Mass_balance,TSS,TanChau→MyThuan,NCF_pct,Phase2,-24.91,-32.78,-14.19,2000
+Mass_balance,TSS,TanChau→MyThuan,Delta_NCF_pct,P2-P1,5.49,-5.86,19.91,2000

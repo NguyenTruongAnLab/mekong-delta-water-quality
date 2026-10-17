@@ -44,10 +44,12 @@ from skbio.stats.ordination import rda
 import statsmodels.api as sm
 
 from _nw_common_tables import (
-    ROOT, WQ_PATH, LULC_PATH, Q_FILE, TIDAL_FILE,
-    MRC_STATIONS, WQ_VARS, LULC_VARS, LABEL_MAP_Y,
-    merge_wq_lulc, prepare_xy, load_wq_raw, load_lulc,
-    MANU_TABLES, write_table_md, write_metrics_csv,
+    ROOT, WQ_PATH, LULC_PATH, MASTER_PATH, Q_FILE, TIDAL_FILE,
+    MRC_STATIONS, WQ_VARS, WQ_ANNUAL_VARS, LABEL_MAP_WQ_ANNUAL,
+    LULC_VARS, PRIMARY_POP_VARS, PRIMARY_HYDRO_VARS, PRIMARY_AUGMENTED_VARS,
+    LABEL_MAP_Y,
+    merge_wq_lulc, prepare_xy, load_wq_raw, load_wq_annual, load_lulc, load_master_bentre,
+    MANU_TABLES, METRICS_OUT, write_table_md, write_metrics_csv,
     ensure_hydro_ingest_importable,
 )
 
@@ -55,11 +57,16 @@ warnings.filterwarnings("ignore")
 
 
 # ═══════════════════════════════════════════════════════════════════════
-# RF CONFIG (consistent with 03_05 baseline script)
+# RF CONFIG (Panel A = 03_05 baseline; Panels B/C = 03_05b primary model)
 # ═══════════════════════════════════════════════════════════════════════
 RF_PARAMS = dict(
     n_estimators=500, random_state=42, max_depth=10,
     min_samples_split=5, min_samples_leaf=2,
+)
+
+RF_PARAMS_PRIMARY = dict(
+    n_estimators=300, random_state=42, max_depth=8,
+    min_samples_split=5, min_samples_leaf=3,
 )
 
 
@@ -72,12 +79,83 @@ def safe_spearman(y_true, y_pred) -> float:
 
 
 # ═══════════════════════════════════════════════════════════════════════
-# PANEL A: Baseline RF LOSO
+# SAMPLE SIZE LEDGER (Conservation of Observations)
+# ═══════════════════════════════════════════════════════════════════════
+
+def build_sample_size_ledger() -> pd.DataFrame:
+    """Build and export the Conservation of Observations ledger for Ben Tre (2005-2022)."""
+    df_all = pd.read_csv(MASTER_PATH)
+    bt_all = df_all[df_all["network"] == "Ben Tre"].copy()
+    bt_2005_2020 = bt_all[(bt_all["year"] >= 2005) & (bt_all["year"] <= 2020)].copy()
+    bt_2021_2022 = bt_all[bt_all["year"] > 2020].copy()
+    bt_2013_2020 = bt_all[(bt_all["year"] >= 2013) & (bt_all["year"] <= 2020)].copy()
+
+    n_total_2005_2022 = len(bt_all)
+    n_window_2005_2020 = len(bt_2005_2020)
+    n_post2020_rows = len(bt_2021_2022)
+
+    # Joint 5-parameter complete case in 2013-2020
+    n_joint_2013_2020 = len(bt_2013_2020.dropna(subset=WQ_ANNUAL_VARS + LULC_VARS))
+
+    rows = []
+    for wq_col in WQ_ANNUAL_VARS:
+        param_label = LABEL_MAP_WQ_ANNUAL[wq_col]
+        raw_nonnull_2005_2022 = int(bt_all[wq_col].notna().sum())
+        missing_wq_2005_2022 = int(bt_all[wq_col].isna().sum())
+        excl_post2020_nonnull = int(bt_2021_2022[wq_col].notna().sum())
+        nonnull_wq_2005_2020 = int(bt_2005_2020[wq_col].notna().sum())
+        missing_wq_2005_2020 = int(bt_2005_2020[wq_col].isna().sum())
+
+        valid_primary = len(bt_2005_2020.dropna(subset=[wq_col] + PRIMARY_AUGMENTED_VARS))
+        missing_preds_2005_2020 = nonnull_wq_2005_2020 - valid_primary
+
+        valid_with_salinity = len(
+            bt_2005_2020.dropna(subset=[wq_col, "Salinity_annual"] + PRIMARY_AUGMENTED_VARS)
+        )
+        excl_missing_salinity = valid_primary - valid_with_salinity
+
+        valid_2013_2020 = len(bt_2013_2020.dropna(subset=[wq_col] + LULC_VARS))
+        excl_pre2013 = valid_primary - valid_2013_2020
+
+        # Verify Conservation of Observations identities:
+        # 1) Total station-years (335) = Raw_NonNull_WQ_2005_2022 + Missing_WQ_2005_2022
+        assert n_total_2005_2022 == raw_nonnull_2005_2022 + missing_wq_2005_2022
+        # 2) Raw_NonNull_WQ_2005_2022 = Excl_2021_2022_No_LULC + Missing_Predictors_2005_2020 + Valid_Primary_2005_2020
+        assert raw_nonnull_2005_2022 == excl_post2020_nonnull + missing_preds_2005_2020 + valid_primary
+        # 3) Window_2005_2020 (297) = Missing_WQ_2005_2020 + Missing_Predictors_2005_2020 + Valid_Primary_2005_2020
+        assert n_window_2005_2020 == missing_wq_2005_2020 + missing_preds_2005_2020 + valid_primary
+
+        rows.append({
+            "Parameter": param_label,
+            "Total_Station_Years_2005_2022": n_total_2005_2022,
+            "Missing_WQ_2005_2022": missing_wq_2005_2022,
+            "Raw_NonNull_WQ_2005_2022": raw_nonnull_2005_2022,
+            "Excluded_2021_2022_No_LULC": excl_post2020_nonnull,
+            "Window_Station_Years_2005_2020": n_window_2005_2020,
+            "Missing_WQ_2005_2020": missing_wq_2005_2020,
+            "Missing_Predictors_2005_2020": missing_preds_2005_2020,
+            "Valid_Primary_Model_2005_2020": valid_primary,
+            "Excluded_Missing_Salinity_2005_2020": excl_missing_salinity,
+            "Valid_With_Salinity_FE_2005_2020": valid_with_salinity,
+            "Excluded_2005_2012_Window": excl_pre2013,
+            "Valid_2013_2020_Single_Param": valid_2013_2020,
+            "Valid_2013_2020_5WQ_Joint": n_joint_2013_2020,
+        })
+
+    ledger_df = pd.DataFrame(rows)
+    out_csv = METRICS_OUT / "ben_tre_sample_size_ledger.csv"
+    ledger_df.to_csv(out_csv, index=False)
+    print(f"  ✓ {out_csv.name}")
+    return ledger_df
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# PANEL A: Baseline RF LOSO (2013-2020 5-parameter complete-case baseline, N=120)
 # ═══════════════════════════════════════════════════════════════════════
 
 def panel_a(Y, X, groups) -> pd.DataFrame:
-    """RF OOB + LOSO + LOYO + permutation importance (baseline LULC-only)."""
-    print("\n  Panel A: Baseline RF LOSO...")
+    """RF OOB + LOSO + permutation importance (baseline LULC-only, N=120)."""
+    print("\n  Panel A: Baseline RF LOSO (2013-2020 5-WQ complete-case, N=120)...")
     logo = LeaveOneGroupOut()
     rows = []
 
@@ -94,15 +172,6 @@ def panel_a(Y, X, groups) -> pd.DataFrame:
         rmse_loso = float(np.sqrt(mean_squared_error(y, y_pred_loso)))
         rho_loso = safe_spearman(y, y_pred_loso)
 
-        # LOYO (by year)
-        years = pd.Series(
-            [int(x) for x in groups.index],
-            index=groups.index,
-        )
-        # We can't do LOYO directly from groups, so use merged df's year.
-        # For simplicity, compute LOSO only (the primary metric)
-        r2_loyo = np.nan  # Placeholder - not available without year groups
-
         # Permutation importance
         perm = permutation_importance(rf, X, y, n_repeats=10, random_state=42)
         n_sig = int((perm.importances_mean > 2 * perm.importances_std).sum())
@@ -114,161 +183,114 @@ def panel_a(Y, X, groups) -> pd.DataFrame:
             "Spearman_rho_LOSO": round(rho_loso, 3),
             "RMSE_LOSO": round(rmse_loso, 3),
             "N_Perm_Significant": n_sig,
+            "N_samples": len(Y),
         })
-        print(f"    {param}: OOB R²={r2_oob:.3f}, LOSO R²={r2_loso:.3f}, ρ={rho_loso:.3f}")
+        print(f"    {param}: OOB R²={r2_oob:.3f}, LOSO R²={r2_loso:.3f}, ρ={rho_loso:.3f} (N={len(Y)})")
 
     return pd.DataFrame(rows)
 
 
 # ═══════════════════════════════════════════════════════════════════════
-# PANEL B: Generalization (RF + Ridge × Baseline vs Augmented)
+# PANEL B: Generalization (RF + Ridge × Baseline 6 LULC vs Primary Augmented 11)
 # ═══════════════════════════════════════════════════════════════════════
 
-def panel_b(merged_full: pd.DataFrame) -> pd.DataFrame:
-    """RF + Ridge × Baseline vs Augmented feature sets → LOSO metrics."""
-    print("\n  Panel B: Generalization comparison...")
+def panel_b() -> pd.DataFrame:
+    """RF + Ridge × Baseline (6 LULC) vs Primary Augmented (11 features) on 2005-2020 Ben Tre master."""
+    print("\n  Panel B: Generalization comparison (2005-2020 Ben Tre master, 6 Baseline vs 11 Augmented)...")
 
-    # Add hydro covariates via Gold Standard
-    ensure_hydro_ingest_importable()
-    from lib.hydro_ingest import join_branch_hydroclimate, hydroclimate_feature_columns
-
-    merged = merged_full.copy()
-    hdf = join_branch_hydroclimate(merged[["stationName", "year"]].copy())
-    hydro_cols = hydroclimate_feature_columns()
-    for c in hydro_cols:
-        if c in hdf.columns:
-            merged[c] = hdf[c].values
-
-    # Add year as numeric
-    merged["Year_num"] = merged["year"].astype(float)
-
-    # Build Branch dummy
-    merged["branch"] = merged["stationName"].astype(str).str[:2]
-    for br in ["HL", "CC", "MT", "BL"]:
-        merged[f"branch_{br}"] = (merged["branch"] == br).astype(float)
-
-    wq_vars = [c for c in WQ_VARS if c in merged.columns]
-    lulc_vars = [c for c in LULC_VARS if c in merged.columns]
-
-    # Augmented feature set = LULC + hydro covariates + year + branch dummies
-    augmented_extra = [c for c in hydro_cols if c in merged.columns]
-    augmented_extra += ["Year_num"]
-    augmented_extra += [f"branch_{br}" for br in ["HL", "CC", "MT", "BL"]
-                        if f"branch_{br}" in merged.columns]
-
+    master_bt = load_master_bentre(year_min=2005, year_max=2020)
     logo = LeaveOneGroupOut()
     rows = []
 
-    for param in wq_vars:
-        param_label = LABEL_MAP_Y.get(param, param)
-        df_clean = merged.dropna(subset=[param] + lulc_vars + augmented_extra).copy()
-        y = df_clean[param]
+    for wq_col in WQ_ANNUAL_VARS:
+        param_label = LABEL_MAP_WQ_ANNUAL[wq_col]
+        df_clean = master_bt.dropna(subset=[wq_col] + PRIMARY_AUGMENTED_VARS).copy()
+        y = df_clean[wq_col].astype(float)
         groups = df_clean["stationName"]
 
         for feature_set_name, feat_cols in [
-            ("Baseline", lulc_vars),
-            ("Augmented", lulc_vars + augmented_extra),
+            ("Baseline", LULC_VARS),
+            ("Augmented", PRIMARY_AUGMENTED_VARS),
         ]:
-            X = df_clean[feat_cols].copy()
-            for model_name, model_cls in [("RF", RandomForestRegressor), ("Ridge", Ridge)]:
+            X = df_clean[feat_cols].astype(float).copy()
+            for model_name in ["RF", "Ridge"]:
                 if model_name == "RF":
-                    model = RandomForestRegressor(**RF_PARAMS)
+                    model = RandomForestRegressor(**RF_PARAMS_PRIMARY)
                 else:
-                    model = Pipeline([
-                        ("scaler", StandardScaler()),
-                        ("ridge", Ridge(alpha=1.0)),
-                    ])
+                    model = Ridge(alpha=1.0)
                 y_pred = cross_val_predict(model, X, y, groups=groups, cv=logo)
 
                 rows.append({
                     "Parameter": param_label,
                     "Feature_Set": feature_set_name,
                     "Model": model_name,
-                    "LOSO_R2": round(r2_score(y, y_pred), 3),
+                    "LOSO_R2": round(float(r2_score(y, y_pred)), 3),
                     "LOSO_RMSE": round(float(np.sqrt(mean_squared_error(y, y_pred))), 3),
                     "LOSO_Spearman_rho": round(safe_spearman(y, y_pred), 3),
                     "N_samples": len(X),
                     "N_features": X.shape[1],
                 })
-        print(f"    {param_label}: done")
+        print(f"    {param_label} (N={len(df_clean)}): done")
 
     return pd.DataFrame(rows)
 
 
 # ═══════════════════════════════════════════════════════════════════════
-# PANEL C: COD Variance Partition
+# PANEL C: COD Variance Partition (2005-2020 Ben Tre master, N=229)
 # ═══════════════════════════════════════════════════════════════════════
 
-def panel_c(merged_full: pd.DataFrame) -> pd.DataFrame:
-    """COD variance partition: LULC-only vs Hydro-only vs Combined."""
-    print("\n  Panel C: COD variance partition...")
+def panel_c() -> pd.DataFrame:
+    """COD variance partition: LULC-only (6) vs LULC+Pop (7) vs Hydro-only (4) vs Combined (11)."""
+    print("\n  Panel C: COD variance partition (2005-2020 Ben Tre master, N=229)...")
 
-    ensure_hydro_ingest_importable()
-    from lib.hydro_ingest import HydroClimateColumns, join_branch_hydroclimate
+    master_bt = load_master_bentre(year_min=2005, year_max=2020)
+    target = "COD (mg/L)_annual"
 
-    merged = merged_full.copy()
-    hdf = join_branch_hydroclimate(merged[["stationName", "year"]].copy())
-    hcols = HydroClimateColumns()
-    for c in [hcols.q_branch_annual, hcols.q_branch_dry,
-              hcols.rain_annual_mm, hcols.rain_dry_mm]:
-        if c in hdf.columns:
-            merged[c] = hdf[c].values
-
-    # Tidal range proxy
-    merged["branch"] = merged["stationName"].astype(str).str[:2]
-    if TIDAL_FILE.exists():
-        tr = pd.read_csv(TIDAL_FILE)
-        tr_map = dict(zip(tr["Station"], tr["Mean_Tidal_Range_m"]))
-        branch_tidal = {
-            "HL": tr_map.get("Vam_Kenh", np.nan),
-            "CC": tr_map.get("Vam_Kenh", np.nan),
-            "MT": tr_map.get("My_Tho", np.nan),
-            "BL": tr_map.get("Vam_Kenh", np.nan),
-        }
-        merged["Tidal_Range_Proxy_m"] = merged["branch"].map(branch_tidal)
-
-    merged["Year_centered"] = merged["year"].astype(float) - merged["year"].astype(float).mean()
-
-    target = "COD (mg/L)"
-    lulc_cols = [c for c in LULC_VARS if c in merged.columns]
-    hydro_cols = [c for c in ["Salinity", hcols.q_branch_annual, hcols.q_branch_dry,
-                              hcols.rain_annual_mm, hcols.rain_dry_mm,
-                              "Tidal_Range_Proxy_m", "Year_centered"]
-                  if c in merged.columns]
-
-    df2 = merged[[target, "stationName"] + lulc_cols + hydro_cols].dropna().copy()
+    df2 = master_bt[["stationName", target] + PRIMARY_AUGMENTED_VARS].dropna().copy()
     y = df2[target].astype(float).values
     groups = df2["stationName"]
+    logo = LeaveOneGroupOut()
 
     rows = []
     for name, cols in [
-        ("LULC_only", lulc_cols),
-        ("Hydro_only", hydro_cols),
-        ("Combined", lulc_cols + hydro_cols),
+        ("LULC-only", LULC_VARS),
+        ("LULC+Pop", LULC_VARS + PRIMARY_POP_VARS),
+        ("Hydro-only", PRIMARY_HYDRO_VARS),
+        ("Combined", PRIMARY_AUGMENTED_VARS),
     ]:
         X = df2[cols].astype(float)
-        model = Pipeline([("scaler", StandardScaler()), ("ridge", Ridge(alpha=1.0))])
-        logo = LeaveOneGroupOut()
-        yhat = cross_val_predict(model, X, y, groups=groups, cv=logo)
+        model_ridge = Ridge(alpha=1.0)
+        yhat_ridge = cross_val_predict(model_ridge, X, y, groups=groups, cv=logo)
 
-        r2 = float(r2_score(y, yhat))
-        rmse = float(np.sqrt(mean_squared_error(y, yhat)))
-        rho = safe_spearman(y, yhat)
+        model_rf = RandomForestRegressor(**RF_PARAMS_PRIMARY)
+        yhat_rf = cross_val_predict(model_rf, X, y, groups=groups, cv=logo)
 
-        # In-sample OLS
-        X_ols = sm.add_constant(X.values.astype(float), has_constant="add")
+        r2_ridge = float(r2_score(y, yhat_ridge))
+        r2_rf = float(r2_score(y, yhat_rf))
+        rmse_ridge = float(np.sqrt(mean_squared_error(y, yhat_ridge)))
+        rho_ridge = safe_spearman(y, yhat_ridge)
+
+        # In-sample OLS (standardize X first so 1e10-scale PD columns do not trip singular value cutoff)
+        X_arr = X.values.astype(float)
+        X_std = (X_arr - X_arr.mean(axis=0)) / np.where(X_arr.std(axis=0) > 0, X_arr.std(axis=0), 1.0)
+        X_ols = sm.add_constant(X_std, has_constant="add")
         ols = sm.OLS(y, X_ols, missing="drop").fit()
 
         rows.append({
             "Predictor_Set": name,
-            "LOSO_R2": round(r2, 3),
-            "LOSO_RMSE": round(rmse, 3),
-            "LOSO_Spearman_rho": round(rho, 3),
+            "LOSO_R2": round(r2_ridge, 3),
+            "LOSO_R2_RF": round(r2_rf, 3),
+            "LOSO_RMSE": round(rmse_ridge, 3),
+            "LOSO_Spearman_rho": round(rho_ridge, 3),
             "OLS_R2": round(float(ols.rsquared), 3),
             "N": len(df2),
             "N_features": len(cols),
         })
-        print(f"    {name}: LOSO R²={r2:.3f}, OLS R²={ols.rsquared:.3f}")
+        print(
+            f"    {name} ({len(cols)} feats, N={len(df2)}): "
+            f"Ridge LOSO R²={r2_ridge:.3f}, RMSE={rmse_ridge:.3f}, ρ={rho_ridge:.3f}, "
+            f"OLS R²={ols.rsquared:.3f}, RF LOSO R²={r2_rf:.3f}"
+        )
 
     return pd.DataFrame(rows)
 
@@ -348,9 +370,8 @@ def panel_d() -> pd.DataFrame:
         print(f"    Ben Tre hydro-proxy: {var_bt2:.3f}")
 
     # ----- MRC LULC-only -----
-    wq_raw = load_wq_raw()
-    wq_mrc = wq_raw[wq_raw["stationName"].isin(MRC_STATIONS)]
-    wq_mrc_annual = wq_mrc.groupby(["stationName", "year"]).mean(numeric_only=True).reset_index()
+    wq_all_annual = load_wq_annual(include_mrc=True)
+    wq_mrc_annual = wq_all_annual[wq_all_annual["stationName"].isin(MRC_STATIONS)].copy()
     lulc = load_lulc()
     merged_mrc = pd.merge(wq_mrc_annual, lulc, on=["stationName", "year"], how="inner")
     merged_mrc = merged_mrc[(merged_mrc["year"] >= 2013) & (merged_mrc["year"] <= 2020)].copy()
@@ -438,32 +459,37 @@ def main():
     print("Table S3: Model Performance & Generalization (4 panels)")
     print("=" * 60)
 
-    # Load base data
+    # Build Conservation of Observations Sample Size Ledger
+    build_sample_size_ledger()
+
+    # Load base data for Panel A (2013-2020 5-parameter complete-case baseline, N=120)
     merged = merge_wq_lulc(bentre_only=True)
     Y, X, groups = prepare_xy(merged, use_display_labels=True)
-    print(f"  Data: {len(Y)} station-years, {Y.shape[1]} params, {X.shape[1]} predictors")
+    print(f"  Panel A Data: {len(Y)} station-years, {Y.shape[1]} params, {X.shape[1]} predictors")
 
     # Build panels
     df_a = panel_a(Y, X, groups)
-    df_b = panel_b(merged)
-    df_c = panel_c(merged)
+    df_b = panel_b()
+    df_c = panel_c()
     df_d = panel_d()
 
     # Write multi-panel Markdown
     sections = []
     sections.append(
         "**Panel A.** Random Forest leave-one-station-out cross-validation "
-        "(baseline LULC-only model).\n\n"
+        "(2013–2020 5-parameter complete-case baseline LULC-only model, $N = 120$).\n\n"
         + df_a.to_markdown(index=False, floatfmt=".3f")
     )
     sections.append(
         "**Panel B.** Generalization comparison "
-        "(RF + Ridge, baseline vs. augmented feature sets, LOSO metrics).\n\n"
+        "(2005–2020 Ben Tre station-year master, RF + Ridge, 6-feature baseline LULC vs. "
+        "11-feature primary augmented feature sets, LOSO metrics).\n\n"
         + df_b.to_markdown(index=False, floatfmt=".3f")
     )
     sections.append(
         "**Panel C.** COD variance partition "
-        "(LULC-only vs. hydro-only vs. combined).\n\n"
+        "(2005–2020 Ben Tre station-year master, $N = 229$: LULC-only [6] vs. LULC+Pop [7] "
+        "vs. Hydro-only [4] vs. Combined [11]).\n\n"
         + df_c.to_markdown(index=False, floatfmt=".3f")
     )
     sections.append(

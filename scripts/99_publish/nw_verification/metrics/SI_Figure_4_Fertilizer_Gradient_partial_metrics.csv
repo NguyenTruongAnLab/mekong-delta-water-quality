@@ -1,0 +1,89 @@
+station,driver,r_fd_partial,n_years
+Tan Chau,"N use (FAO, kg/ha)",0.14082956961556345,39
+Tan Chau,"NPK use (FAO, kg/ha)",0.24074044792613963,39
+Tan Chau,"Paddy Area (GSO, kha)",0.0427988883385389,29
+Tan Chau,"Fertilizer (WB, kg/ha)",0.23816280490351788,39
+Can Tho,"N use (FAO, kg/ha)",-0.16936218561011987,39
+Can Tho,"NPK use (FAO, kg/ha)",-0.1735082146415661,39
+Can Tho,"Paddy Area (GSO, kha)",-0.1250773582367026,29
+Can Tho,"Fertilizer (WB, kg/ha)",-0.17561358090077292,39
+My Thuan,"N use (FAO, kg/ha)",-0.4084041440736229,38
+My Thuan,"NPK use (FAO, kg/ha)",-0.3016169928924949,38
+My Thuan,"Paddy Area (GSO, kha)",0.11316173264725786,28
+My Thuan,"Fertilizer (WB, kg/ha)",-0.32931821773624115,38
+My Tho,"N use (FAO, kg/ha)",-0.25564443139310017,39
+My Tho,"NPK use (FAO, kg/ha)",-0.05838750803698736,39
+My Tho,"Paddy Area (GSO, kha)",0.09737544046397253,29
+My Tho,"Fertilizer (WB, kg/ha)",-0.04377772694167468,39
+BL01,"N use (FAO, kg/ha)",0.8299371590122979,18
+BL01,"NPK use (FAO, kg/ha)",0.7093461362063277,18
+BL01,"Paddy Area (GSO, kha)",0.03282074633392646,18
+BL01,"Fertilizer (WB, kg/ha)",0.707899004218065,18
+BL02,"N use (FAO, kg/ha)",0.6885212186868425,15
+BL02,"NPK use (FAO, kg/ha)",0.6734644516917728,15
+BL02,"Paddy Area (GSO, kha)",0.21679790281244504,15
+BL02,"Fertilizer (WB, kg/ha)",0.6452955184020576,15
+BL03,"N use (FAO, kg/ha)",0.5300920263948684,18
+BL03,"NPK use (FAO, kg/ha)",0.6120514007774843,18
+BL03,"Paddy Area (GSO, kha)",-0.18359952141211386,18
+BL03,"Fertilizer (WB, kg/ha)",0.5954431654702358,18
+BL04,"N use (FAO, kg/ha)",0.6976682485148944,18
+BL04,"NPK use (FAO, kg/ha)",0.7791170025317634,18
+BL04,"Paddy Area (GSO, kha)",-0.13532044998661888,18
+BL04,"Fertilizer (WB, kg/ha)",0.7666750011402282,18
+CC01,"N use (FAO, kg/ha)",0.2702693220739345,18
+CC01,"NPK use (FAO, kg/ha)",0.2627229152355494,18
+CC01,"Paddy Area (GSO, kha)",0.20478945463734227,18
+CC01,"Fertilizer (WB, kg/ha)",0.2776775753547081,18
+CC02,"N use (FAO, kg/ha)",0.6839838374247587,18
+CC02,"NPK use (FAO, kg/ha)",0.5462597456178323,18
+CC02,"Paddy Area (GSO, kha)",0.0783257153255266,18
+CC02,"Fertilizer (WB, kg/ha)",0.549326446697899,18
+CC03,"N use (FAO, kg/ha)",-0.13423474898804086,18
+CC03,"NPK use (FAO, kg/ha)",-0.15109794017632752,18
+CC03,"Paddy Area (GSO, kha)",0.1346816695860183,18
+CC03,"Fertilizer (WB, kg/ha)",-0.14240291064092633,18
+CC04,"N use (FAO, kg/ha)",0.8779971709724166,18
+CC04,"NPK use (FAO, kg/ha)",0.8410448740764422,18
+CC04,"Paddy Area (GSO, kha)",-0.20205924248453225,18
+CC04,"Fertilizer (WB, kg/ha)",0.828482376313302,18
+CC05,"N use (FAO, kg/ha)",,1
+CC05,"NPK use (FAO, kg/ha)",,1
+CC05,"Paddy Area (GSO, kha)",,1
+CC05,"Fertilizer (WB, kg/ha)",,1
+HL01,"N use (FAO, kg/ha)",0.30976991429947726,18
+HL01,"NPK use (FAO, kg/ha)",0.3769511871229338,18
+HL01,"Paddy Area (GSO, kha)",0.2142836189954377,18
+HL01,"Fertilizer (WB, kg/ha)",0.3959528946406576,18
+HL02,"N use (FAO, kg/ha)",0.30390753414120475,14
+HL02,"NPK use (FAO, kg/ha)",0.22987404775903483,14
+HL02,"Paddy Area (GSO, kha)",-0.17791666738999584,14
+HL02,"Fertilizer (WB, kg/ha)",0.21177388896135177,14
+HL03,"N use (FAO, kg/ha)",0.6101118001104133,18
+HL03,"NPK use (FAO, kg/ha)",0.6186092007557167,18
+HL03,"Paddy Area (GSO, kha)",-0.3866755797875896,18
+HL03,"Fertilizer (WB, kg/ha)",0.6038930503477957,18
+HL04,"N use (FAO, kg/ha)",0.687646652701269,18
+HL04,"NPK use (FAO, kg/ha)",0.7070739800354546,18
+HL04,"Paddy Area (GSO, kha)",-0.4996826941877173,18
+HL04,"Fertilizer (WB, kg/ha)",0.6757564751481632,18
+HL05,"N use (FAO, kg/ha)",,1
+HL05,"NPK use (FAO, kg/ha)",,1
+HL05,"Paddy Area (GSO, kha)",,1
+HL05,"Fertilizer (WB, kg/ha)",,1
+MT01,"N use (FAO, kg/ha)",0.23355443574962126,18
+MT01,"NPK use (FAO, kg/ha)",0.25576679826518056,18
+MT01,"Paddy Area (GSO, kha)",0.20132896202162537,18
+MT01,"Fertilizer (WB, kg/ha)",0.2690281959443016,18
+MT02,"N use (FAO, kg/ha)",0.7921033920180487,18
+MT02,"NPK use (FAO, kg/ha)",0.8417877719236931,18
+MT02,"Paddy Area (GSO, kha)",-0.2733421882691536,18
+MT02,"Fertilizer (WB, kg/ha)",0.8154442871709278,18
+MT03,"N use (FAO, kg/ha)",0.5527247278530895,18
+MT03,"NPK use (FAO, kg/ha)",0.6401290209091037,18
+MT03,"Paddy Area (GSO, kha)",-0.4470434720279191,18
+MT03,"Fertilizer (WB, kg/ha)",0.6076079940901041,18
+MT04,"N use (FAO, kg/ha)",,1
+MT04,"NPK use (FAO, kg/ha)",,1
+MT04,"Paddy Area (GSO, kha)",,1
+MT04,"Fertilizer (WB, kg/ha)",,1

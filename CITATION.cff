@@ -1,0 +1,66 @@
+cff-version: 1.2.0
+message: "If you use this software or the associated derived datasets, please cite the software archive and the accompanying article."
+type: software
+title: "Hydrodynamic shift controls organic pollution in the Mekong Delta: Analysis and verification code"
+version: 2.0.0
+date-released: "2026-10-17"
+license: MIT
+repository-code: "https://github.com/NguyenTruongAnLab/mekong-delta-water-quality"
+doi: "10.5281/zenodo.20024194"
+authors:
+  - family-names: "Nguyen"
+    given-names: "An Truong"
+    email: "truong-an.nguyen@univ-grenoble-alpes.fr"
+    affiliation: "Université Grenoble Alpes, CNRS, IRD, INRAE, Grenoble-INP, IGE, 38000 Grenoble, France; Centre for Asian Research on Water (CARE), Ho Chi Minh City University of Technology (HCMUT), VNU-HCM, Ho Chi Minh City, Vietnam"
+  - family-names: "Némery"
+    given-names: "Julien"
+    affiliation: "Université Grenoble Alpes, CNRS, IRD, INRAE, Grenoble-INP, IGE, 38000 Grenoble, France"
+  - family-names: "Tran"
+    given-names: "Kim Thi"
+    affiliation: "Department of Natural Resources and Environment (DONRE), Ben Tre Province, Vietnam"
+  - family-names: "Tran"
+    given-names: "Thai Thanh"
+    affiliation: "Institute of Tropical Biology (ITB), Vietnam Academy of Science and Technology (VAST), Ho Chi Minh City, Vietnam"
+  - family-names: "Truong"
+    given-names: "Thinh Van"
+    affiliation: "Centre for Asian Research on Water (CARE), Ho Chi Minh City University of Technology (HCMUT), VNU-HCM, Ho Chi Minh City, Vietnam"
+  - family-names: "Le"
+    given-names: "Thi-Minh-Tam"
+    affiliation: "Centre for Asian Research on Water (CARE), Ho Chi Minh City University of Technology (HCMUT), VNU-HCM, Ho Chi Minh City, Vietnam"
+  - family-names: "Nguyen-Dam"
+    given-names: "Quoc-Huy"
+    affiliation: "Centre for Asian Research on Water (CARE), Ho Chi Minh City University of Technology (HCMUT), VNU-HCM, Ho Chi Minh City, Vietnam"
+  - family-names: "Garnier"
+    given-names: "Josette"
+    affiliation: "Sorbonne Université, CNRS, EPHE, UMR 7619 Metis, 75005 Paris, France"
+keywords:
+  - Mekong Delta
+  - water quality
+  - chemical oxygen demand
+  - concentration-discharge scaling
+  - WRTDS flow normalization
+  - tidal flushing
+  - fixed-effects panel regression
+  - TreeSHAP
+preferred-citation:
+  type: article
+  title: "Hydrodynamic shift controls organic pollution in the Mekong Delta"
+  authors:
+    - family-names: "Nguyen"
+      given-names: "An Truong"
+    - family-names: "Némery"
+      given-names: "Julien"
+    - family-names: "Tran"
+      given-names: "Kim Thi"
+    - family-names: "Tran"
+      given-names: "Thai Thanh"
+    - family-names: "Truong"
+      given-names: "Thinh Van"
+    - family-names: "Le"
+      given-names: "Thi-Minh-Tam"
+    - family-names: "Nguyen-Dam"
+      given-names: "Quoc-Huy"
+    - family-names: "Garnier"
+      given-names: "Josette"
+  journal: "Nature Water"
+  year: 2026

@@ -1,0 +1,31 @@
+Panel,Parameter,Station_frac,Year_frac,Residual_frac,N,LULC_only_LOSO_R2,Augmented_LOSO_R2,Feature,Mean_Abs_SHAP
+a_variance_decomp,COD,0.1134,0.5805,0.3061,259.0,,,,
+a_variance_decomp,DO,0.397,0.2304,0.3726,190.0,,,,
+a_variance_decomp,NH$_4^+$,0.0905,0.2416,0.6679,335.0,,,,
+a_variance_decomp,TSS,0.3385,0.1086,0.5529,332.0,,,,
+b_LOSO_R2,COD,,,,229.0,0.0682,0.2281,,
+b_LOSO_R2,DO,,,,152.0,0.0118,0.0798,,
+b_LOSO_R2,NH$_4^+$,,,,297.0,-0.0452,-0.0615,,
+b_LOSO_R2,TSS,,,,294.0,-0.2231,-0.2663,,
+c_SHAP,COD,,,,,,,Tidal range (m),1.3177
+c_SHAP,DO,,,,,,,Tidal range (m),0.0665
+c_SHAP,COD,,,,,,,"Discharge (My Thuan, annual z)",0.8099
+c_SHAP,DO,,,,,,,"Discharge (My Thuan, annual z)",0.0444
+c_SHAP,COD,,,,,,,Rice PD,0.5098
+c_SHAP,DO,,,,,,,Rice PD,0.0391
+c_SHAP,COD,,,,,,,Rainfall (dry z),0.4433
+c_SHAP,DO,,,,,,,Rainfall (dry z),0.0493
+c_SHAP,COD,,,,,,,Urban PD,0.3977
+c_SHAP,DO,,,,,,,Urban PD,0.0256
+c_SHAP,COD,,,,,,,Aquaculture ED,0.3072
+c_SHAP,DO,,,,,,,Aquaculture ED,0.1508
+c_SHAP,COD,,,,,,,Population density,0.1628
+c_SHAP,DO,,,,,,,Population density,0.0852
+c_SHAP,COD,,,,,,,Rainfall (annual z),0.1591
+c_SHAP,DO,,,,,,,Rainfall (annual z),0.1325
+c_SHAP,COD,,,,,,,Urban %,0.1563
+c_SHAP,DO,,,,,,,Urban %,0.037
+c_SHAP,COD,,,,,,,Rice %,0.151
+c_SHAP,DO,,,,,,,Rice %,0.0527
+c_SHAP,COD,,,,,,,Aquaculture %,0.0952
+c_SHAP,DO,,,,,,,Aquaculture %,0.3555

@@ -26,10 +26,10 @@ from sklearn.ensemble import RandomForestRegressor
 import shap
 
 from _nw_common_tables import (
-    LULC_VARS, LABEL_MAP_X, WQ_VARS,
+    MASTER_PATH, LULC_VARS, LABEL_MAP_X, WQ_VARS,
     merge_wq_lulc, prepare_xy,
     MANU_TABLES, write_table_md, write_metrics_csv,
-    ensure_hydro_ingest_importable,
+    ensure_hydro_ingest_importable, shap_direction_and_corr,
 )
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -51,13 +51,15 @@ def _shap_ranks(X, y, feature_labels=None):
 
     mean_abs = np.abs(sv).mean(axis=0)
     mean_val = sv.mean(axis=0)
+    directions, corrs = shap_direction_and_corr(X, sv)
     names = feature_labels if feature_labels else list(X.columns)
 
     df = pd.DataFrame({
         "Driver": names,
         "Mean_Abs_SHAP": mean_abs,
         "Mean_SHAP": mean_val,
-        "Direction": ["Positive" if m > 0 else "Negative" for m in mean_val],
+        "SHAP_Corr_r": corrs,
+        "Direction": directions,
     }).sort_values("Mean_Abs_SHAP", ascending=False).reset_index(drop=True)
     df["Rank"] = range(1, len(df) + 1)
     return df
@@ -90,7 +92,8 @@ def panel_a() -> pd.DataFrame:
     display_labels = [label_map.get(c, c) for c in X.columns]
 
     result = _shap_ranks(X, y, feature_labels=display_labels)
-    print(f"    N={len(df)}, top driver: {result.iloc[0]['Driver']}")
+    print(f"    N={len(df)}, top driver: {result.iloc[0]['Driver']} "
+          f"(r={result.iloc[0]['SHAP_Corr_r']:+.3f}, {result.iloc[0]['Direction']})")
     return result
 
 
@@ -105,13 +108,13 @@ def panel_b() -> pd.DataFrame:
 
     merged = merge_wq_lulc(bentre_only=True)
 
-    # Get branch discharge from Gold Standard
-    ensure_hydro_ingest_importable()
-    from lib.hydro_ingest import HydroClimateColumns, join_branch_hydroclimate
-
-    hdf = join_branch_hydroclimate(merged[["stationName", "year"]].copy())
-    hcols = HydroClimateColumns()
-    merged["Q_branch_m3s"] = hdf[hcols.q_branch_annual].values
+    # Get branch discharge from station-year master or Gold Standard
+    if "Q_branch_AnnualMean_m3s" in merged.columns:
+        merged["Q_branch_m3s"] = merged["Q_branch_AnnualMean_m3s"].values
+    else:
+        master_df = pd.read_csv(MASTER_PATH)[["stationName", "year", "Q_branch_AnnualMean_m3s"]]
+        merged = merged.merge(master_df, on=["stationName", "year"], how="left")
+        merged["Q_branch_m3s"] = merged["Q_branch_AnnualMean_m3s"].values
 
     target = "COD (mg/L)"
     lulc_cols = [c for c in LULC_VARS if c in merged.columns]
@@ -149,7 +152,8 @@ def panel_b() -> pd.DataFrame:
         result = _shap_ranks(X[good], y[good], feature_labels=display_labels)
         result["Response"] = y_label
         rows.append(result)
-        print(f"    {y_label}: top driver = {result.iloc[0]['Driver']}")
+        print(f"    {y_label}: top driver = {result.iloc[0]['Driver']} "
+              f"(r={result.iloc[0]['SHAP_Corr_r']:+.3f}, {result.iloc[0]['Direction']})")
 
     return pd.concat(rows, ignore_index=True)
 
@@ -170,7 +174,7 @@ def main():
     metric_parts = []
 
     if len(df_a) > 0:
-        keep = [c for c in ["Driver", "Mean_Abs_SHAP", "Mean_SHAP", "Direction"]
+        keep = [c for c in ["Driver", "Mean_Abs_SHAP", "Mean_SHAP", "SHAP_Corr_r", "Direction"]
                 if c in df_a.columns]
         sections.append(
             "**Panel A.** SHAP feature rankings when salinity is "
@@ -181,7 +185,7 @@ def main():
         metric_parts.append(df_a)
 
     if len(df_b) > 0:
-        keep = [c for c in ["Response", "Rank", "Driver", "Mean_Abs_SHAP", "Direction"]
+        keep = [c for c in ["Response", "Rank", "Driver", "Mean_Abs_SHAP", "Mean_SHAP", "SHAP_Corr_r", "Direction"]
                 if c in df_b.columns]
         sections.append(
             "**Panel B.** SHAP rankings across three alternative COD "
@@ -198,18 +202,20 @@ def main():
         out_path=MANU_TABLES / "Supplementary_Table_S4_COD_Robustness.md",
         caption=(
             "Supplementary Table S4. COD attribution robustness checks addressing "
-            "two potential confounds. Panel A tests whether mixing-zone salinity "
+            "two potential confounds. Direction is defined by the sign of the Pearson "
+            "correlation $r(X_j, \\phi_j)$ between feature values and SHAP values. "
+            "Panel A tests whether mixing-zone salinity "
             "confounds LULC attribution by including salinity as a 7th predictor "
             "alongside six LULC metrics; Urban PD remains the top driver (mean "
             "$|\\text{SHAP}|$ = 1.54) while salinity ranks 5th (0.60), "
-            "indicating that the urbanisation--COD association persists "
+            "indicating that the urbanization--COD association persists "
             "independently of tidal mixing gradients. Panel B tests sensitivity "
             "to response metric choice by comparing SHAP rankings across three "
             "COD formulations: concentration (mg L$^{-1}$), load (tons "
             "day$^{-1}$, computed using branch discharge), and flow-normalized "
             "residual ($C - \\hat{C}|_Q$). Urban PD ranked in the top two "
             "positions across all formulations, demonstrating that attribution "
-            "conclusions are not artefacts of the response metric."
+            "conclusions are not artifacts of the response metric."
         ),
         label="#tbl-s4-cod-robustness",
     )

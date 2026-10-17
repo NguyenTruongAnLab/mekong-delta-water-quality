@@ -25,6 +25,7 @@ import shap
 
 from _nw_common_tables import (
     merge_wq_lulc, prepare_xy, MANU_TABLES, write_table_md, write_metrics_csv,
+    shap_direction_and_corr,
 )
 
 
@@ -91,6 +92,7 @@ def compute_shap_loso(X: pd.DataFrame, Y: pd.DataFrame, groups: pd.Series) -> li
         y = Y[param]
         abs_sum = np.zeros(X.shape[1], dtype=float)
         sum_shap = np.zeros(X.shape[1], dtype=float)
+        sv_oof = np.zeros((len(X), X.shape[1]), dtype=float)
         n_total = 0
 
         for train_idx, test_idx in logo.split(X, y, groups=groups):
@@ -98,24 +100,28 @@ def compute_shap_loso(X: pd.DataFrame, Y: pd.DataFrame, groups: pd.Series) -> li
             rf.fit(X.iloc[train_idx], y.iloc[train_idx])
             explainer = shap.TreeExplainer(rf)
             sv = explainer.shap_values(X.iloc[test_idx])
+            sv_oof[test_idx] = sv
             abs_sum += np.abs(sv).sum(axis=0)
             sum_shap += sv.sum(axis=0)
             n_total += sv.shape[0]
 
         mean_abs = abs_sum / max(n_total, 1)
         mean_val = sum_shap / max(n_total, 1)
+        directions, corrs = shap_direction_and_corr(X, sv_oof)
 
         df = pd.DataFrame({
             "Driver": X.columns,
             "Mean_Abs_SHAP": mean_abs,
             "Mean_SHAP": mean_val,
-            "Direction": ["Positive" if m > 0 else "Negative" for m in mean_val],
+            "SHAP_Corr_r": corrs,
+            "Direction": directions,
             "Parameter": param,
         }).sort_values("Mean_Abs_SHAP", ascending=False)
         df["Rank"] = range(1, len(df) + 1)
         results.append(df)
         print(f"    {param}: top driver = {df.iloc[0]['Driver']} "
-              f"(|SHAP| = {df.iloc[0]['Mean_Abs_SHAP']:.3f})")
+              f"(|SHAP| = {df.iloc[0]['Mean_Abs_SHAP']:.3f}, "
+              f"r = {df.iloc[0]['SHAP_Corr_r']:+.3f}, {df.iloc[0]['Direction']})")
 
     return results
 
@@ -124,7 +130,7 @@ def compute_shap_loso(X: pd.DataFrame, Y: pd.DataFrame, groups: pd.Series) -> li
 # TABLE BUILDER
 # ═══════════════════════════════════════════════════════════════════════
 
-def build_s2() -> pd.DataFrame:
+def build_s2() -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Build the consolidated SHAP importance table.
 
@@ -156,20 +162,20 @@ def build_s2() -> pd.DataFrame:
             .sort_values(ascending=False)
             .reset_index()
         )
-        # Predominant direction (sign of sum across parameters)
-        dir_map = (
-            df.groupby("Driver")["Mean_SHAP"]
-            .sum()
-            .apply(lambda x: "Positive" if x > 0 else "Negative")
-        )
+        mean_shap_map = df.groupby("Driver")["Mean_SHAP"].mean()
+        corr_map = df.groupby("Driver")["SHAP_Corr_r"].mean()
         for rank_i, (_, row) in enumerate(global_rank.iterrows(), start=1):
+            drv = row["Driver"]
+            corr_val = float(corr_map.get(drv, 0.0))
             rows_a.append({
                 "Panel": "A: Global",
                 "Specification": spec_label,
-                "Driver": row["Driver"],
+                "Driver": drv,
                 "Rank": rank_i,
                 "Mean SHAP": row["Mean_Abs_SHAP"],
-                "Direction": dir_map.get(row["Driver"], ""),
+                "Mean_SHAP": float(mean_shap_map.get(drv, 0.0)),
+                "SHAP_Corr_r": corr_val,
+                "Direction": "Positive" if corr_val >= 0 else "Negative",
                 "Parameter": "All",
             })
 
@@ -185,12 +191,15 @@ def build_s2() -> pd.DataFrame:
                 "Driver": top["Driver"],
                 "Rank": 1,
                 "Mean SHAP": top["Mean_Abs_SHAP"],
+                "Mean_SHAP": float(top["Mean_SHAP"]),
+                "SHAP_Corr_r": float(top["SHAP_Corr_r"]),
                 "Direction": top["Direction"],
                 "Parameter": param,
             })
 
-    result = pd.DataFrame(rows_a + rows_b)
-    return result
+    full_df = pd.DataFrame(rows_a + rows_b)
+    md_df = full_df[["Panel", "Specification", "Driver", "Rank", "Mean SHAP", "SHAP_Corr_r", "Direction", "Parameter"]].copy()
+    return md_df, full_df
 
 
 def main():
@@ -198,31 +207,33 @@ def main():
     print("Table S2: SHAP Feature Importance (Baseline vs. Orthogonalized)")
     print("=" * 60)
 
-    df = build_s2()
+    md_df, full_df = build_s2()
 
     # Write Markdown table
-    md_content = df.to_markdown(index=False, floatfmt=".3f")
+    md_content = md_df.to_markdown(index=False, floatfmt=".3f")
     write_table_md(
         content=md_content,
         out_path=MANU_TABLES / "Supplementary_Table_S2_SHAP_Importance.md",
-        caption = (
-        "Supplementary Table S2. SHAP feature-importance rankings under "
-        "baseline and orthogonalized predictor specifications, computed via "
-        "LOSO cross-validated RF ($n_{\\mathrm{trees}} = 500$). Panel A "
-        "reports global rankings (mean $|\\text{SHAP}|$ across five WQ "
-        "parameters); Panel B reports the parameter-specific dominant driver. "
-        "Orthogonalization residualizes each configuration metric against its "
-        "corresponding composition percentage via linear regression, isolating "
-        "fragmentation effects beyond areal extent. Rankings remained consistent "
-        "across specifications: the dominant drivers for each parameter were "
-        "unchanged, confirming that the attribution conclusions in the main text "
-        "are robust to the multicollinearity documented in @tbl-s1-screening."
-    ),
+        caption=(
+            "Supplementary Table S2. SHAP feature-importance rankings under "
+            "baseline and orthogonalized predictor specifications, computed via "
+            "LOSO cross-validated RF ($n_{\\mathrm{trees}} = 500$). Panel A "
+            "reports global rankings (mean $|\\text{SHAP}|$ across five WQ "
+            "parameters); Panel B reports the parameter-specific dominant driver. "
+            "Direction is defined by the sign of the Pearson correlation $r(X_j, \\phi_j)$ "
+            "between feature values and out-of-fold SHAP values. "
+            "Orthogonalization residualizes each configuration metric against its "
+            "corresponding composition percentage via linear regression, isolating "
+            "fragmentation effects beyond areal extent. Rankings remained consistent "
+            "across specifications: the dominant drivers for each parameter were "
+            "unchanged, confirming that the attribution conclusions in the main text "
+            "are robust to the multicollinearity documented in @tbl-s1-screening."
+        ),
         label="#tbl-s2-shap",
     )
 
     # Write companion metrics
-    write_metrics_csv(df, "S2_shap_importance")
+    write_metrics_csv(full_df, "S2_shap_importance")
     print("\n  Table S2 written successfully.\n")
 
 

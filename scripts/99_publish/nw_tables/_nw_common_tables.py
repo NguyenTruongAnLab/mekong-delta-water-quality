@@ -24,46 +24,13 @@ from sklearn.preprocessing import StandardScaler
 warnings.filterwarnings("ignore")
 
 # ═══════════════════════════════════════════════════════════════════════
-# ZENODO DOI  (replace with real DOI after upload)
-# ═══════════════════════════════════════════════════════════════════════
-ZENODO_DOI = "10.5281/zenodo.20024194"
-
-_RESTRICTED_MSG = f"""
-╔══════════════════════════════════════════════════════════════════════════╗
-║  RESTRICTED DATA REQUIRED                                               ║
-║                                                                         ║
-║  This script requires the full water-quality dataset that includes      ║
-║  Ben Tre provincial monitoring data (DONRE) and/or SIWRP hydrology.     ║
-║  These are subject to third-party organizational access policies and    ║
-║  are NOT included in this public GitHub repository.                     ║
-║                                                                         ║
-║  To obtain the complete dataset:                                        ║
-║    1. Request access via the restricted Zenodo record:                  ║
-║       {ZENODO_DOI}                                                      ║
-║    2. After approval, place the data files in the `data/` folder        ║
-║       at the repository root (see data/README.md for structure).        ║
-║                                                                         ║
-║  For applying this workflow to YOUR OWN river system, replace the       ║
-║  data files with your own datasets following the same schema.           ║
-╚══════════════════════════════════════════════════════════════════════════╝
-"""
-
-
-def _fail_restricted(file_label: str, path: Path) -> None:
-    """Print clear guidance about restricted data and exit."""
-    print(f"\n  Missing: {file_label}")
-    print(f"  Expected at: {path}")
-    print(_RESTRICTED_MSG)
-    sys.exit(1)
-
-
-# ═══════════════════════════════════════════════════════════════════════
 # PATHS (relative to repository root = scripts/ parent)
 # ═══════════════════════════════════════════════════════════════════════
 ROOT = Path(__file__).resolve().parents[3]  # repo root
 
 WQ_PATH     = ROOT / "data" / "mekong_delta_water_quality_1985_2023.csv"
 LULC_PATH   = ROOT / "analysis" / "cache" / "lulc_metrics_corrected_16km.csv"
+MASTER_PATH = ROOT / "analysis" / "cache" / "station_year_master_latest.csv"
 HYDRO_PATH  = (ROOT / "data" / "hydrology" / "outputs" / "final_datasets"
                / "Mekong_Delta_Gold_Standard_Master_1985_2025.csv")
 Q_FILE      = ROOT / "analysis" / "hydrology_MRC" / "VMD_Total_Discharge_Estimated_1985_2022.csv"
@@ -82,9 +49,28 @@ METRICS_OUT.mkdir(parents=True, exist_ok=True)
 MRC_STATIONS = ["Tan Chau", "Can Tho", "My Thuan", "My Tho"]
 YEAR_MIN     = 2013
 YEAR_MAX     = 2020
+PRIMARY_YEAR_MIN = 2005
+PRIMARY_YEAR_MAX = 2020
 
 # 5 WQ parameters used in spatial attribution (TP excluded: 100% NaN in Ben Tre)
 WQ_VARS = ["COD (mg/L)", "DO (mg/L)", "NH4-N (mg/L)", "NO3-N (mg/L)", "TSS (mg/L)"]
+
+# Corresponding column names in station_year_master_latest.csv
+WQ_ANNUAL_VARS = [
+    "COD (mg/L)_annual",
+    "DO (mg/L)_annual",
+    "NH4-N (mg/L)_annual",
+    "NO3-N (mg/L)_annual",
+    "TSS (mg/L)_annual",
+]
+
+LABEL_MAP_WQ_ANNUAL = {
+    "COD (mg/L)_annual":   "COD",
+    "DO (mg/L)_annual":    "DO",
+    "NH4-N (mg/L)_annual": "NH4-N",
+    "NO3-N (mg/L)_annual": "NO3-N",
+    "TSS (mg/L)_annual":   "TSS",
+}
 
 # 6 baseline LULC predictors
 LULC_VARS = [
@@ -96,7 +82,17 @@ LULC_VARS = [
     "Rice_Cultivation_config_PD",
 ]
 
-# Display labels for LULC predictors
+# Primary augmented predictors (6 LULC + 1 Pop + 4 Hydro-climate = 11 features)
+PRIMARY_POP_VARS = ["pop_density"]
+PRIMARY_HYDRO_VARS = [
+    "Rain_Annual_z",
+    "Rain_Dry_z",
+    "Q_MyThuan_AnnualMean_z",
+    "TR_MyThuan_m",
+]
+PRIMARY_AUGMENTED_VARS = LULC_VARS + PRIMARY_POP_VARS + PRIMARY_HYDRO_VARS
+
+# Display labels for predictors
 LABEL_MAP_X = {
     "Residential_Urban_composition_pct": "Urban %",
     "Residential_Urban_config_PD":      "Urban PD",
@@ -104,6 +100,11 @@ LABEL_MAP_X = {
     "Aquaculture_config_ED":            "Aquaculture ED",
     "Rice_Cultivation_composition_pct": "Rice %",
     "Rice_Cultivation_config_PD":       "Rice PD",
+    "pop_density":                      "Population Density",
+    "Rain_Annual_z":                    "Annual Rainfall (z)",
+    "Rain_Dry_z":                       "Dry-Season Rainfall (z)",
+    "Q_MyThuan_AnnualMean_z":           "Annual Discharge (z)",
+    "TR_MyThuan_m":                     "Tidal Range (m)",
 }
 
 LABEL_MAP_Y = {
@@ -127,25 +128,80 @@ def require_file(path: Path, label: str = "") -> None:
         )
 
 
-def load_wq_raw() -> pd.DataFrame:
-    """Load the raw water quality CSV and add a year column.
+def load_master_bentre(
+    year_min: int = PRIMARY_YEAR_MIN,
+    year_max: int = PRIMARY_YEAR_MAX,
+) -> pd.DataFrame:
+    """Load station_year_master_latest.csv filtered to Ben Tre stations and year window."""
+    require_file(MASTER_PATH, "Station-year master CSV")
+    df = pd.read_csv(MASTER_PATH)
+    df = df[df["network"] == "Ben Tre"].copy()
+    df = df[(df["year"] >= year_min) & (df["year"] <= year_max)].copy()
+    return df
 
-    Requires the full dataset including Ben Tre DONRE restricted data.
-    If missing, prints clear guidance about Zenodo restricted-access record.
+
+def shap_direction_and_corr(
+    X: pd.DataFrame,
+    shap_values: np.ndarray,
+) -> tuple[list[str], np.ndarray]:
+    """Compute SHAP feature effect direction from sign of Pearson r(X_j, phi_j).
+
+    Because E[phi_j] = 0 by additive expectation, the raw arithmetic mean of SHAP
+    values fluctuates near zero due to sampling and out-of-fold test splits.
+    The physically meaningful direction of a feature's effect is the sign of
+    corr(X_j, phi_j) across observations.
     """
-    if not WQ_PATH.exists():
-        _fail_restricted("Water quality CSV (MRC + Ben Tre DONRE)", WQ_PATH)
+    X_arr = np.asarray(X, dtype=float)
+    sv_arr = np.asarray(shap_values, dtype=float)
+    n_features = X_arr.shape[1]
+    corrs = np.zeros(n_features, dtype=float)
+    directions: list[str] = []
+    for j in range(n_features):
+        x_j = X_arr[:, j]
+        sv_j = sv_arr[:, j]
+        valid_mask = np.isfinite(x_j) & np.isfinite(sv_j)
+        if valid_mask.sum() > 2 and np.std(x_j[valid_mask]) > 0 and np.std(sv_j[valid_mask]) > 0:
+            corr_j = float(np.corrcoef(x_j[valid_mask], sv_j[valid_mask])[0, 1])
+        else:
+            corr_j = 0.0
+        corrs[j] = corr_j
+        directions.append("Positive" if corr_j >= 0 else "Negative")
+    return directions, corrs
+
+
+def load_wq_raw() -> pd.DataFrame:
+    """Load the raw water quality CSV and add a year column."""
+    require_file(WQ_PATH, "Water quality CSV")
     df = pd.read_csv(WQ_PATH)
     df["year"] = pd.to_datetime(df["datetime"], errors="coerce").dt.year
     return df
 
 
 def load_wq_annual(include_mrc: bool = False) -> pd.DataFrame:
-    """WQ → annual station means, optionally excluding MRC stations."""
-    df = load_wq_raw()
+    """Load annual station water quality means.
+
+    Uses raw monitoring observations when available (full Zenodo archive) and
+    falls back to the pre-aggregated station-year master table in the public
+    GitHub repository.
+    """
+    if WQ_PATH.exists():
+        df = load_wq_raw()
+        if not include_mrc:
+            df = df[~df["stationName"].isin(MRC_STATIONS)]
+        wq_annual = df.groupby(["stationName", "year"]).mean(numeric_only=True).reset_index()
+        return wq_annual
+
+    require_file(MASTER_PATH, "Station-year master CSV")
+    master = pd.read_csv(MASTER_PATH)
     if not include_mrc:
-        df = df[~df["stationName"].isin(MRC_STATIONS)]
-    wq_annual = df.groupby(["stationName", "year"]).mean(numeric_only=True).reset_index()
+        master = master[~master["stationName"].isin(MRC_STATIONS)].copy()
+    rename_map = {f"{v}_annual": v for v in WQ_VARS if f"{v}_annual" in master.columns}
+    if "Salinity_annual" in master.columns:
+        rename_map["Salinity_annual"] = "Salinity"
+    keep_cols = ["stationName", "year"] + list(rename_map.keys())
+    if "Q_branch_AnnualMean_m3s" in master.columns:
+        keep_cols.append("Q_branch_AnnualMean_m3s")
+    wq_annual = master[keep_cols].rename(columns=rename_map).copy()
     return wq_annual
 
 
@@ -198,7 +254,7 @@ def prepare_xy(
     groups = df_clean["stationName"]
 
     if use_display_labels:
-        X.rename(columns=LABEL_MAP_X, inplace=True)
+        X.rename(columns={k: v for k, v in LABEL_MAP_X.items() if k in LULC_VARS}, inplace=True)
         Y.rename(columns=LABEL_MAP_Y, inplace=True)
 
     return Y, X, groups
@@ -236,3 +292,4 @@ def ensure_hydro_ingest_importable() -> None:
     analysis_dir = str(ROOT / "analysis")
     if analysis_dir not in sys.path:
         sys.path.insert(0, analysis_dir)
+

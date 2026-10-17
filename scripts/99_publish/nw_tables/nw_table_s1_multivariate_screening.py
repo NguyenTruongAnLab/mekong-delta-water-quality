@@ -97,8 +97,8 @@ def main():
         caption=(
             "Supplementary Table S1. Redundancy analysis (RDA) biplot scores and "
             "variance inflation factors (VIF) for six LULC predictors. The two "
-            "configuration metrics with the longest biplot vectors — Aquaculture edge "
-            "density (ED) and Urban patch density (PD) — exhibit persistent "
+            "configuration metrics with the longest biplot vectors (Aquaculture edge "
+            "density [ED] and Urban patch density [PD]) exhibit persistent "
             "multicollinearity (VIF = 91.4 and 73.9, respectively), exceeding the "
             "conventional threshold of 10. This collinearity reflects the inherent "
             "correlation between composition and configuration within the same "

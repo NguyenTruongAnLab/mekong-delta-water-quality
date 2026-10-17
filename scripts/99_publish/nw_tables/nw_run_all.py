@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Nature Water — Generate ALL Supplementary Tables
-================================================
+Nature Water: Generate All Supplementary Tables
+===============================================
 Single entry point to regenerate every supplementary table (S1-S5).
 The scripts use the shared _nw_common_tables.py for consistent data loading.
 
@@ -20,7 +20,7 @@ def main() -> None:
     t0 = time.time()
 
     print("=" * 70)
-    print("NATURE WATER — Complete Supplementary Table Pipeline")
+    print("NATURE WATER: Complete Supplementary Table Pipeline")
     print("=" * 70)
 
     # ── Table S1 ──
