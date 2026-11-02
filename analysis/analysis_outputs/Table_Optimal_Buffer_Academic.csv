@@ -1,0 +1,10 @@
+WQ_Parameter,Best_Metric,Peak_Buffer_km,Peak_r,Kneedle_Buffer_km,CI_Overlap_Buffer_km,First_Significant_km,Consensus_Buffer_km
+DO,Aquaculture_config_PD,30,-0.368492069163271,15,22,1,15
+BOD5,Residential_Urban_config_LSI,28,0.6278360460944004,20,19,1,19
+COD,Water_Bodies_composition_pct,22,0.6753150803668624,12,16,4,12
+NH4,Residential_Urban_config_LPI,2,-0.3882564799746864,22,1,1,1
+NO3,Other_Crops_config_ED,23,0.3875726241887919,2,7,1,2
+TN,Water_Bodies_config_LPI,16,-0.5010382772188204,16,1,1,1
+TSS,Water_Bodies_config_PD,24,0.3909070751174617,9,6,1,6
+PO4,Forest_config_ED,23,0.3616705572993013,22,1,1,1
+TP,Water_Bodies_config_LSI,1,0.3013902757390194,7,1,1,1

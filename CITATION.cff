@@ -1,0 +1,44 @@
+cff-version: 1.2.0
+message: "If you use this software or the associated derived datasets, please cite this archive."
+type: software
+title: "Hydrodynamic shift controls organic pollution in the Mekong Delta: Analysis and verification code"
+version: 2.0.0
+date-released: "2026-04-18"
+license: MIT
+repository-code: "https://github.com/NguyenTruongAnLab/mekong-delta-water-quality"
+doi: "10.5281/zenodo.20024193"
+authors:
+  - family-names: "Nguyen"
+    given-names: "An Truong"
+    email: "truong-an.nguyen@sorbonne-universite.fr"
+    affiliation: "Université Grenoble Alpes, CNRS, IRD, INRAE, Grenoble-INP, IGE, 38000, Grenoble, France; Centre for Asian Research on Water (CARE), Ho Chi Minh City University of Technology (HCMUT), 268 Ly Thuong Kiet Street, District 10, Ho Chi Minh City, Vietnam"
+  - family-names: "Némery"
+    given-names: "Julien"
+    affiliation: "Université Grenoble Alpes, CNRS, IRD, INRAE, Grenoble-INP, IGE, 38000, Grenoble, France; Centre for Asian Research on Water (CARE), Ho Chi Minh City University of Technology (HCMUT), 268 Ly Thuong Kiet Street, District 10, Ho Chi Minh City, Vietnam"
+  - family-names: "Tran"
+    given-names: "Kim Thi"
+    affiliation: "University of Science, Ho Chi Minh City, 700000 Vietnam"
+  - family-names: "Tran"
+    given-names: "Thai Thanh"
+    affiliation: "Institute of Life Sciences, Vietnam Academy of Science and Technology (VAST), Ho Chi Minh City, 700000 Vietnam"
+  - family-names: "Truong"
+    given-names: "Thinh Van"
+    affiliation: "Earth Observation Research Center, Japan Aerospace Exploration Agency (JAXA), 2-1-1 Sengen, Tsukuba 305-8505, Ibaraki, Japan"
+  - family-names: "Le"
+    given-names: "Thi-Minh-Tam"
+    affiliation: "Centre for Asian Research on Water (CARE), Ho Chi Minh City University of Technology (HCMUT), 268 Ly Thuong Kiet Street, District 10, Ho Chi Minh City, Vietnam"
+  - family-names: "Nguyen-Dam"
+    given-names: "Quoc-Huy"
+    affiliation: "Ho Chi Minh City University of Natural Resources and Environment, Ho Chi Minh City, Vietnam"
+  - family-names: "Garnier"
+    given-names: "Josette"
+    affiliation: "Sorbonne Université, CNRS, EPHE, UMR 7619 Metis, BP 123, Tour 56-55, Etage 3, 4 Place Jussieu, 75005 Paris, France"
+keywords:
+  - Mekong Delta
+  - water quality
+  - chemical oxygen demand
+  - concentration-discharge scaling
+  - WRTDS flow normalization
+  - tidal flushing
+  - fixed-effects panel regression
+  - TreeSHAP

@@ -1,0 +1,28 @@
+Claim,Status,Detail
+COD_post_break_slopes,PASS,COD Phase2 slopes (TC+CT): 0.0535 to 0.0549
+COD_all_station_slopes,PASS,INFO: all stations range 0.0172 to 0.0650
+COD_CI_Phase1,PASS,PASS [COD_CI_Phase1]: actual=0.8399  expected=0.8400
+COD_CI_Phase2,PASS,PASS [COD_CI_Phase2]: actual=0.4948  expected=0.4900
+TanChau_COD_beta_P1,PASS,PASS [TanChau_COD_beta_P1]: actual=0.2877  expected=0.2880
+TanChau_COD_beta_P2,PASS,PASS [TanChau_COD_beta_P2]: actual=0.2189  expected=0.2190
+TN_TanChau_p,PASS,"PASS [TN_TanChau_p]: p=0.9660 (expected non-sig, p~0.97)"
+TN_CanTho_p,PASS,PASS [TN_CanTho_p]: actual=0.0047  expected=0.0050
+TN_Phase2_NCF,PASS,PASS [TN_Phase2_NCF]: actual=16.3421  expected=16.3000
+COD_Phase2_NCF,PASS,PASS [COD_Phase2_NCF]: actual=-1.4263  expected=-1.4000
+TN_NCF_trend_p,PASS,PASS [TN_NCF_trend_p]: actual=0.0277  expected=0.0280
+COD_LULC_LOSO,PASS,"INFO [COD_LULC_only_LOSO_R2_allstations]: actual=0.0682, N=229"
+COD_FE_LULC_R2,PASS,PASS [COD_FE_plus_LULC_R2]: actual=0.6540  expected=0.6540
+COD_FE_N,PASS,PASS [COD_N]: actual=229  expected=229
+COD_naive_R2,PASS,PASS [COD_naive_R2]: actual=0.3015  expected=0.3010
+COD_FE_only_R2,PASS,PASS [COD_FE_only_R2]: actual=0.6491  expected=0.6490
+COD_FE_plus_LULC_R2_recomputed,PASS,PASS [COD_FE_plus_LULC_R2_recomputed]: actual=0.6540  expected=0.6540
+COD_Delta_R2,PASS,PASS [COD_Delta_R2]: actual=0.0050  expected=0.0050
+NH4_UrbanPD_p,PASS,PASS [NH4_UrbanPD_p]: actual=0.0186  expected=0.0190
+COD_Year_frac,PASS,PASS [COD_Year_frac]: actual=0.5805  expected=0.5800
+COD_Station_frac,PASS,PASS [COD_Station_frac]: actual=0.1134  expected=0.1100
+COD_top_SHAP_is_tidal,PASS,PASS: Top driver = Tidal range (m) (|SHAP|=1.32)
+COD_tidal_SHAP_1.32,PASS,PASS [COD_tidal_SHAP_1.32]: actual=1.3177  expected=1.3200
+Fig4c_no_zero_bars,PASS,"PASS: Fig 4c has 22 bars (11 features x 2 vars), min |SHAP| = 0.0256 > 0"
+ED5_11_features_4_sets,PASS,PASS: ED Fig 5 has 11 features and 4 predictor sets
+S5_Baseline_UrbanPD_se_TwoWay,PASS,PASS [S5_Baseline_UrbanPD_se_TwoWay]: actual=2.2790  expected=2.2790
+S5_HydroClim_Year_se_TwoWay,PASS,PASS [S5_HydroClim_Year_se_TwoWay]: actual=0.8130  expected=0.8130

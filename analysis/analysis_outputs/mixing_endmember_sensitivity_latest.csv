@@ -1,0 +1,3 @@
+Variable,Fresh_threshold_rule,Sea_threshold_rule,N_fresh,N_sea,C_fresh_median,C_sea_median,S_sea_fixed
+COD (mg/L),Salinity<=0.5 (fallback: <=10th pct),Salinity>=20 (fallback: >=90th pct),257,44,12.0,11.0,30.0
+NH4-N (mg/L),Salinity<=0.5 (fallback: <=10th pct),Salinity>=20 (fallback: >=90th pct),263,53,0.097,0.076,30.0

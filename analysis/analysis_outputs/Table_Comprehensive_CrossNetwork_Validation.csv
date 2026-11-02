@@ -1,0 +1,7 @@
+Key_Finding,MRC_Result,Ben_Tre_Result,Methods_Consistent,Magnitude_Comparable,Key_Message_Robust
+Regime Shift Timing,2004-2005 (all 4 stations),Same period,Yes,Yes,Yes
+COD Trend Direction,Increasing (+0.068/yr),Increasing (all stations),Yes,N/A (method offset),Yes
+DO Trend Direction,Decreasing (-0.053/yr),Decreasing (all stations),Yes,Yes (consistent range),Yes
+Urban = Primary Driver,Urban % and PD in Top 3,Urban = highest RF (0.44),Yes,Yes,Yes
+Configuration > Composition,"PD, ED significant","PD, ED comparable to %",Yes,Yes,Yes
+Optimal Buffer Scale,Included in analysis,Kneedle: 16-17 km,Yes,Yes,Yes

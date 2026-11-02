@@ -1,0 +1,208 @@
+station,driver,wq_param,controls,partial_r_fd,partial_p_fd,N
+BL01,FAO N (kg/ha),NO₃⁻-N,Q + Rain,0.8037,0.000101,17
+BL01,FAO N (kg/ha),COD,Q + Rain,0.5463,0.043269,14
+BL01,FAO N (kg/ha),NH₄⁺-N,Q + Rain,-0.2593,0.314977,17
+BL01,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,0.7061,0.001535,17
+BL01,FAO NPK (kg/ha),COD,Q + Rain,0.4333,0.121699,14
+BL01,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,-0.298,0.245278,17
+BL01,N × VMD paddy,NO₃⁻-N,Q + Rain,0.8058,9.4e-05,17
+BL01,N × VMD paddy,COD,Q + Rain,0.5186,0.057444,14
+BL01,N × VMD paddy,NH₄⁺-N,Q + Rain,-0.2441,0.345152,17
+BL02,FAO N (kg/ha),NO₃⁻-N,Q + Rain,0.8129,0.000408,14
+BL02,FAO N (kg/ha),COD,Q + Rain,-0.1626,0.595643,13
+BL02,FAO N (kg/ha),NH₄⁺-N,Q + Rain,0.2711,0.348574,14
+BL02,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,0.7262,0.003269,14
+BL02,FAO NPK (kg/ha),COD,Q + Rain,0.2975,0.32353,13
+BL02,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,0.432,0.122967,14
+BL02,N × VMD paddy,NO₃⁻-N,Q + Rain,0.8382,0.000181,14
+BL02,N × VMD paddy,COD,Q + Rain,-0.1129,0.713534,13
+BL02,N × VMD paddy,NH₄⁺-N,Q + Rain,0.2584,0.372432,14
+BL03,FAO N (kg/ha),NO₃⁻-N,Q + Rain,0.5676,0.017472,17
+BL03,FAO N (kg/ha),COD,Q + Rain,-0.1447,0.621683,14
+BL03,FAO N (kg/ha),NH₄⁺-N,Q + Rain,-0.4049,0.106897,17
+BL03,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,0.6036,0.010307,17
+BL03,FAO NPK (kg/ha),COD,Q + Rain,-0.0495,0.866463,14
+BL03,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,-0.317,0.215039,17
+BL03,N × VMD paddy,NO₃⁻-N,Q + Rain,0.572,0.016424,17
+BL03,N × VMD paddy,COD,Q + Rain,-0.1654,0.572113,14
+BL03,N × VMD paddy,NH₄⁺-N,Q + Rain,-0.4289,0.085785,17
+BL04,FAO N (kg/ha),NO₃⁻-N,Q + Rain,0.703,0.001645,17
+BL04,FAO N (kg/ha),COD,Q + Rain,-0.1898,0.515832,14
+BL04,FAO N (kg/ha),NH₄⁺-N,Q + Rain,0.1086,0.678181,17
+BL04,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,0.7644,0.000352,17
+BL04,FAO NPK (kg/ha),COD,Q + Rain,0.126,0.667786,14
+BL04,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,0.0166,0.949663,17
+BL04,N × VMD paddy,NO₃⁻-N,Q + Rain,0.7066,0.001519,17
+BL04,N × VMD paddy,COD,Q + Rain,-0.1878,0.520335,14
+BL04,N × VMD paddy,NH₄⁺-N,Q + Rain,0.1208,0.64408,17
+CC01,FAO N (kg/ha),NO₃⁻-N,Q + Rain,0.264,0.305952,17
+CC01,FAO N (kg/ha),COD,Q + Rain,0.1784,0.541772,14
+CC01,FAO N (kg/ha),NH₄⁺-N,Q + Rain,0.349,0.169711,17
+CC01,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,0.2354,0.363168,17
+CC01,FAO NPK (kg/ha),COD,Q + Rain,-0.0408,0.889915,14
+CC01,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,0.4176,0.095348,17
+CC01,N × VMD paddy,NO₃⁻-N,Q + Rain,0.3111,0.224144,17
+CC01,N × VMD paddy,COD,Q + Rain,0.1558,0.594932,14
+CC01,N × VMD paddy,NH₄⁺-N,Q + Rain,0.2981,0.245153,17
+CC02,FAO N (kg/ha),NO₃⁻-N,Q + Rain,0.6917,0.002097,17
+CC02,FAO N (kg/ha),COD,Q + Rain,-0.0234,0.936601,14
+CC02,FAO N (kg/ha),NH₄⁺-N,Q + Rain,-0.4749,0.054036,17
+CC02,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,0.5698,0.016948,17
+CC02,FAO NPK (kg/ha),COD,Q + Rain,0.0626,0.831528,14
+CC02,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,-0.4518,0.068676,17
+CC02,N × VMD paddy,NO₃⁻-N,Q + Rain,0.6944,0.00198,17
+CC02,N × VMD paddy,COD,Q + Rain,-0.0353,0.904768,14
+CC02,N × VMD paddy,NH₄⁺-N,Q + Rain,-0.4605,0.062886,17
+CC03,FAO N (kg/ha),NO₃⁻-N,Q + Rain,-0.1266,0.628121,17
+CC03,FAO N (kg/ha),COD,Q + Rain,-0.0716,0.807804,14
+CC03,FAO N (kg/ha),NH₄⁺-N,Q + Rain,-0.1779,0.494653,17
+CC03,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,-0.1275,0.625842,17
+CC03,FAO NPK (kg/ha),COD,Q + Rain,0.0967,0.742343,14
+CC03,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,-0.248,0.337228,17
+CC03,N × VMD paddy,NO₃⁻-N,Q + Rain,-0.1029,0.694384,17
+CC03,N × VMD paddy,COD,Q + Rain,-0.0751,0.798603,14
+CC03,N × VMD paddy,NH₄⁺-N,Q + Rain,-0.1612,0.536499,17
+CC04,FAO N (kg/ha),NO₃⁻-N,Q + Rain,0.8807,3e-06,17
+CC04,FAO N (kg/ha),COD,Q + Rain,0.1933,0.507814,14
+CC04,FAO N (kg/ha),NH₄⁺-N,Q + Rain,0.1288,0.62215,17
+CC04,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,0.8369,2.8e-05,17
+CC04,FAO NPK (kg/ha),COD,Q + Rain,0.0106,0.971266,14
+CC04,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,0.2309,0.372519,17
+CC04,N × VMD paddy,NO₃⁻-N,Q + Rain,0.8576,1.1e-05,17
+CC04,N × VMD paddy,COD,Q + Rain,0.1422,0.627668,14
+CC04,N × VMD paddy,NH₄⁺-N,Q + Rain,0.1451,0.578558,17
+CC05,FAO N (kg/ha),NO₃⁻-N,Q + Rain,,,0
+CC05,FAO N (kg/ha),COD,Q + Rain,-0.1089,0.7974,8
+CC05,FAO N (kg/ha),NH₄⁺-N,Q + Rain,0.0452,0.863302,17
+CC05,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,,,0
+CC05,FAO NPK (kg/ha),COD,Q + Rain,-0.0921,0.828208,8
+CC05,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,-0.001,0.99686,17
+CC05,N × VMD paddy,NO₃⁻-N,Q + Rain,,,0
+CC05,N × VMD paddy,COD,Q + Rain,-0.0515,0.903605,8
+CC05,N × VMD paddy,NH₄⁺-N,Q + Rain,0.0874,0.738736,17
+Can Tho,FAO N (kg/ha),NO₃⁻-N,Q + Rain,-0.1705,0.312879,37
+Can Tho,FAO N (kg/ha),COD,Q + Rain,-0.0225,0.89484,37
+Can Tho,FAO N (kg/ha),NH₄⁺-N,Q + Rain,-0.0711,0.675691,37
+Can Tho,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,-0.1866,0.268707,37
+Can Tho,FAO NPK (kg/ha),COD,Q + Rain,-0.0435,0.798294,37
+Can Tho,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,-0.2212,0.188375,37
+Can Tho,N × VMD paddy,NO₃⁻-N,Q + Rain,-0.3571,0.067478,27
+Can Tho,N × VMD paddy,COD,Q + Rain,0.0231,0.908817,27
+Can Tho,N × VMD paddy,NH₄⁺-N,Q + Rain,-0.1385,0.490755,27
+HL01,FAO N (kg/ha),NO₃⁻-N,Q + Rain,0.3046,0.234508,17
+HL01,FAO N (kg/ha),COD,Q + Rain,-0.3235,0.259149,14
+HL01,FAO N (kg/ha),NH₄⁺-N,Q + Rain,-0.2972,0.246667,17
+HL01,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,0.3594,0.156474,17
+HL01,FAO NPK (kg/ha),COD,Q + Rain,-0.3469,0.22426,14
+HL01,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,-0.3062,0.232021,17
+HL01,N × VMD paddy,NO₃⁻-N,Q + Rain,0.3541,0.163163,17
+HL01,N × VMD paddy,COD,Q + Rain,-0.3335,0.243906,14
+HL01,N × VMD paddy,NH₄⁺-N,Q + Rain,-0.3229,0.20625,17
+HL02,FAO N (kg/ha),NO₃⁻-N,Q + Rain,0.3676,0.216636,13
+HL02,FAO N (kg/ha),COD,Q + Rain,-0.0048,0.987559,13
+HL02,FAO N (kg/ha),NH₄⁺-N,Q + Rain,-0.2543,0.401841,13
+HL02,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,0.2427,0.424281,13
+HL02,FAO NPK (kg/ha),COD,Q + Rain,-0.0497,0.872021,13
+HL02,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,0.1315,0.668463,13
+HL02,N × VMD paddy,NO₃⁻-N,Q + Rain,0.3342,0.264336,13
+HL02,N × VMD paddy,COD,Q + Rain,-0.0291,0.924902,13
+HL02,N × VMD paddy,NH₄⁺-N,Q + Rain,-0.2261,0.457667,13
+HL03,FAO N (kg/ha),NO₃⁻-N,Q + Rain,0.6089,0.009474,17
+HL03,FAO N (kg/ha),COD,Q + Rain,0.2486,0.391366,14
+HL03,FAO N (kg/ha),NH₄⁺-N,Q + Rain,-0.2662,0.301683,17
+HL03,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,0.6201,0.007915,17
+HL03,FAO NPK (kg/ha),COD,Q + Rain,0.0469,0.873436,14
+HL03,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,-0.2999,0.242245,17
+HL03,N × VMD paddy,NO₃⁻-N,Q + Rain,0.5536,0.021142,17
+HL03,N × VMD paddy,COD,Q + Rain,0.1971,0.499315,14
+HL03,N × VMD paddy,NH₄⁺-N,Q + Rain,-0.2699,0.294788,17
+HL04,FAO N (kg/ha),NO₃⁻-N,Q + Rain,0.702,0.001681,17
+HL04,FAO N (kg/ha),COD,Q + Rain,0.0198,0.946464,14
+HL04,FAO N (kg/ha),NH₄⁺-N,Q + Rain,-0.2977,0.245918,17
+HL04,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,0.6966,0.001891,17
+HL04,FAO NPK (kg/ha),COD,Q + Rain,-0.05,0.865155,14
+HL04,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,-0.3228,0.206388,17
+HL04,N × VMD paddy,NO₃⁻-N,Q + Rain,0.6449,0.00519,17
+HL04,N × VMD paddy,COD,Q + Rain,-0.0094,0.974672,14
+HL04,N × VMD paddy,NH₄⁺-N,Q + Rain,-0.2891,0.260466,17
+HL05,FAO N (kg/ha),NO₃⁻-N,Q + Rain,,,0
+HL05,FAO N (kg/ha),COD,Q + Rain,-0.4828,0.225558,8
+HL05,FAO N (kg/ha),NH₄⁺-N,Q + Rain,-0.4108,0.101449,17
+HL05,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,,,0
+HL05,FAO NPK (kg/ha),COD,Q + Rain,-0.4955,0.211787,8
+HL05,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,-0.4498,0.070074,17
+HL05,N × VMD paddy,NO₃⁻-N,Q + Rain,,,0
+HL05,N × VMD paddy,COD,Q + Rain,-0.488,0.219847,8
+HL05,N × VMD paddy,NH₄⁺-N,Q + Rain,-0.4097,0.102401,17
+MT01,FAO N (kg/ha),NO₃⁻-N,Q + Rain,0.2286,0.377416,17
+MT01,FAO N (kg/ha),COD,Q + Rain,-0.2144,0.461645,14
+MT01,FAO N (kg/ha),NH₄⁺-N,Q + Rain,-0.2786,0.278823,17
+MT01,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,0.2413,0.350723,17
+MT01,FAO NPK (kg/ha),COD,Q + Rain,-0.2698,0.350816,14
+MT01,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,-0.3687,0.145342,17
+MT01,N × VMD paddy,NO₃⁻-N,Q + Rain,0.277,0.281859,17
+MT01,N × VMD paddy,COD,Q + Rain,-0.1881,0.519659,14
+MT01,N × VMD paddy,NH₄⁺-N,Q + Rain,-0.2756,0.284362,17
+MT02,FAO N (kg/ha),NO₃⁻-N,Q + Rain,0.8682,6e-06,17
+MT02,FAO N (kg/ha),COD,Q + Rain,0.2042,0.483763,14
+MT02,FAO N (kg/ha),NH₄⁺-N,Q + Rain,-0.1349,0.605792,17
+MT02,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,0.8748,4e-06,17
+MT02,FAO NPK (kg/ha),COD,Q + Rain,0.4938,0.072751,14
+MT02,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,-0.2327,0.368843,17
+MT02,N × VMD paddy,NO₃⁻-N,Q + Rain,0.8557,1.2e-05,17
+MT02,N × VMD paddy,COD,Q + Rain,0.1889,0.517893,14
+MT02,N × VMD paddy,NH₄⁺-N,Q + Rain,-0.1278,0.625074,17
+MT03,FAO N (kg/ha),NO₃⁻-N,Q + Rain,0.5911,0.012455,17
+MT03,FAO N (kg/ha),COD,Q + Rain,-0.2386,0.411303,14
+MT03,FAO N (kg/ha),NH₄⁺-N,Q + Rain,-0.5762,0.015476,17
+MT03,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,0.6393,0.005727,17
+MT03,FAO NPK (kg/ha),COD,Q + Rain,0.1301,0.657542,14
+MT03,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,-0.5399,0.025275,17
+MT03,N × VMD paddy,NO₃⁻-N,Q + Rain,0.5459,0.023408,17
+MT03,N × VMD paddy,COD,Q + Rain,-0.2382,0.412269,14
+MT03,N × VMD paddy,NH₄⁺-N,Q + Rain,-0.5844,0.013746,17
+MT04,FAO N (kg/ha),NO₃⁻-N,Q + Rain,,,0
+MT04,FAO N (kg/ha),COD,Q + Rain,0.2571,0.538723,8
+MT04,FAO N (kg/ha),NH₄⁺-N,Q + Rain,0.0642,0.806732,17
+MT04,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,,,0
+MT04,FAO NPK (kg/ha),COD,Q + Rain,0.1266,0.765202,8
+MT04,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,-0.0403,0.877865,17
+MT04,N × VMD paddy,NO₃⁻-N,Q + Rain,,,0
+MT04,N × VMD paddy,COD,Q + Rain,0.2151,0.60899,8
+MT04,N × VMD paddy,NH₄⁺-N,Q + Rain,0.0559,0.83115,17
+MT05,FAO N (kg/ha),NO₃⁻-N,Q + Rain,,,0
+MT05,FAO N (kg/ha),COD,Q + Rain,-0.4976,0.209583,8
+MT05,FAO N (kg/ha),NH₄⁺-N,Q + Rain,0.2651,0.303839,17
+MT05,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,,,0
+MT05,FAO NPK (kg/ha),COD,Q + Rain,-0.468,0.242209,8
+MT05,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,0.0661,0.800976,17
+MT05,N × VMD paddy,NO₃⁻-N,Q + Rain,,,0
+MT05,N × VMD paddy,COD,Q + Rain,-0.548,0.159668,8
+MT05,N × VMD paddy,NH₄⁺-N,Q + Rain,0.2162,0.40456,17
+My Tho,FAO N (kg/ha),NO₃⁻-N,Q + Rain,-0.3353,0.042494,37
+My Tho,FAO N (kg/ha),COD,Q + Rain,0.1929,0.252632,37
+My Tho,FAO N (kg/ha),NH₄⁺-N,Q + Rain,-0.0677,0.690486,37
+My Tho,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,-0.1751,0.29989,37
+My Tho,FAO NPK (kg/ha),COD,Q + Rain,0.2708,0.105024,37
+My Tho,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,0.0331,0.846013,37
+My Tho,N × VMD paddy,NO₃⁻-N,Q + Rain,-0.3313,0.091379,27
+My Tho,N × VMD paddy,COD,Q + Rain,0.3505,0.073051,27
+My Tho,N × VMD paddy,NH₄⁺-N,Q + Rain,-0.1136,0.572624,27
+My Thuan,FAO N (kg/ha),NO₃⁻-N,Q + Rain,-0.4599,0.004776,36
+My Thuan,FAO N (kg/ha),COD,Q + Rain,-0.0137,0.93678,36
+My Thuan,FAO N (kg/ha),NH₄⁺-N,Q + Rain,0.0355,0.837303,36
+My Thuan,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,-0.3674,0.027498,36
+My Thuan,FAO NPK (kg/ha),COD,Q + Rain,0.0676,0.695191,36
+My Thuan,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,-0.0671,0.697594,36
+My Thuan,N × VMD paddy,NO₃⁻-N,Q + Rain,-0.5638,0.002705,26
+My Thuan,N × VMD paddy,COD,Q + Rain,0.0939,0.648268,26
+My Thuan,N × VMD paddy,NH₄⁺-N,Q + Rain,-0.0598,0.771638,26
+Tan Chau,FAO N (kg/ha),NO₃⁻-N,Q + Rain,0.1481,0.381796,37
+Tan Chau,FAO N (kg/ha),COD,Q + Rain,-0.0074,0.965289,37
+Tan Chau,FAO N (kg/ha),NH₄⁺-N,Q + Rain,-0.0749,0.659683,37
+Tan Chau,FAO NPK (kg/ha),NO₃⁻-N,Q + Rain,0.2723,0.102993,37
+Tan Chau,FAO NPK (kg/ha),COD,Q + Rain,0.0403,0.812809,37
+Tan Chau,FAO NPK (kg/ha),NH₄⁺-N,Q + Rain,-0.1119,0.509677,37
+Tan Chau,N × VMD paddy,NO₃⁻-N,Q + Rain,0.1801,0.368667,27
+Tan Chau,N × VMD paddy,COD,Q + Rain,0.1225,0.542669,27
+Tan Chau,N × VMD paddy,NH₄⁺-N,Q + Rain,-0.2456,0.216877,27

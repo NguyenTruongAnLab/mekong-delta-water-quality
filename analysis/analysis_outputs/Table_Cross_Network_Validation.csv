@@ -1,0 +1,7 @@
+Validation_Test,MRC_Result,Ben_Tre_Result,Consistency
+Regime Shift Timing,2004-2005,2005 (same period),Consistent
+COD Trend Direction (Phase 2),Increasing (+0.068/yr),Increasing (consistent),Consistent
+DO Trend Direction (Phase 2),Decreasing (-0.053/yr),Decreasing (consistent),Consistent
+Top Driver for COD,Rice PD (with Urban #2-3),Urban (RF=0.44),Both Urban-dominant
+Urban in Top 3 Drivers,"Yes (Urban %, Urban PD)","Yes (RF=0.44, highest)",Both Urban in Top 3
+Aquaculture in Top 6 Drivers,Yes (Aquaculture ED),Yes (RF=0.26),Both include Aquaculture

@@ -1,0 +1,10 @@
+ERA5_Trend,11.4
+ERA5_SenSlope,8.79
+ERA5_KendallTau,0.249
+ERA5_KendallP,0.028
+CHIRPS_Trend,7.0
+CHIRPS_SenSlope,6.92
+CHIRPS_KendallTau,0.306
+CHIRPS_KendallP,0.007
+Correlation,0.61
+CHIRPS_2015_Anom,-9.2

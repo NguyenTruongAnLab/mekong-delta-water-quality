@@ -1,0 +1,17 @@
+Period,Season,Pair,Lag_Hours,Lag_Std,N_Years
+Phase 1,Dry,Tan_Chau -> My_Thuan,0.0,0.0,16
+Phase 1,Wet,Tan_Chau -> My_Thuan,96.0,78.38367176906169,3
+Phase 1,Dry,My_Thuan -> My_Tho,0.0,0.0,20
+Phase 1,Wet,My_Thuan -> My_Tho,0.0,0.0,20
+Phase 1,Dry,My_Tho -> Vam_Kenh,16.0,11.313708498984761,12
+Phase 1,Wet,My_Tho -> Vam_Kenh,0.0,0.0,1
+Phase 1,Dry,Tan_Chau -> Vam_Kenh,0.0,0.0,13
+Phase 1,Wet,Tan_Chau -> Vam_Kenh,44.30769230769231,68.4323187428331,13
+Phase 2,Dry,Tan_Chau -> My_Thuan,0.0,0.0,13
+Phase 2,Wet,Tan_Chau -> My_Thuan,42.666666666666664,47.70278351999551,9
+Phase 2,Dry,My_Thuan -> My_Tho,0.0,0.0,4
+Phase 2,Wet,My_Thuan -> My_Tho,0.0,0.0,2
+Phase 2,Dry,My_Tho -> Vam_Kenh,17.142857142857142,10.842094834863016,7
+Phase 2,Wet,My_Tho -> Vam_Kenh,0.0,0.0,1
+Phase 2,Dry,Tan_Chau -> Vam_Kenh,18.46153846153846,57.37945945078173,13
+Phase 2,Wet,Tan_Chau -> Vam_Kenh,28.0,40.19950248448356,6
