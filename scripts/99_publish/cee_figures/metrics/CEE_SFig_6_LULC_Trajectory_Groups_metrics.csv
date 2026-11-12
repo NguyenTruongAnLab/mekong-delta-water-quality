@@ -1,0 +1,5 @@
+Figure,Cluster,Label,N_stations
+SFig6,0,"G1: ↑Aquaculture, ↓Wetland/Rice",3
+SFig6,1,"G2: ↑Aquaculture, ↓Wetland (coastal)",4
+SFig6,2,"G3: ↑Residential, ↓Rice",4
+SFig6,3,"G4: ↑Residential/Aqua, ↓Rice",8

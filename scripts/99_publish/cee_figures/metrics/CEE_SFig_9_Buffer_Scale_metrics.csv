@@ -1,0 +1,7 @@
+Figure,WQ,Peak_km,Elbow_km,Best_metric,Peak_r
+CEE_SFig9,COD,24,16,Aquaculture LPI,0.728
+CEE_SFig9,DO,26,6,Residential_Urban %,-0.5585
+CEE_SFig9,NH4,21,12,Water_Bodies %,0.4752
+CEE_SFig9,NO3,25,13,Other_Crops ED,0.3895
+CEE_SFig9,TN,2,2,Residential_Urban %,0.5406
+CEE_SFig9,TSS,23,17,Water_Bodies LPI,0.527

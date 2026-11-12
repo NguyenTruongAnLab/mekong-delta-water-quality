@@ -1,0 +1,41 @@
+Panel,Parameter,Station_frac,Year_frac,Residual_frac,N,LULC_only_LOSO_R2,Augmented_LOSO_R2,Feature,Mean_Abs_SHAP,Term,Beta,CI95_lo_Stn,CI95_hi_Stn,p_Cluster_Stn,p_TwoWay
+a_variance_decomp,COD,0.1134,0.5805,0.3061,259.0,,,,,,,,,,
+a_variance_decomp,BOD$_5$,0.1248,0.5897,0.2856,311.0,,,,,,,,,,
+a_variance_decomp,DO,0.397,0.2304,0.3726,190.0,,,,,,,,,,
+a_variance_decomp,NH$_4^+$-N,0.0905,0.2416,0.6679,335.0,,,,,,,,,,
+a_variance_decomp,TSS,0.3385,0.1086,0.5529,332.0,,,,,,,,,,
+b_LOSO_R2,COD,,,,229.0,0.0682,0.2281,,,,,,,,
+b_LOSO_R2,BOD$_5$,,,,281.0,0.1827,0.2469,,,,,,,,
+b_LOSO_R2,DO,,,,152.0,0.0118,0.0798,,,,,,,,
+b_LOSO_R2,NH$_4^+$-N,,,,297.0,-0.0452,-0.0615,,,,,,,,
+b_LOSO_R2,TSS,,,,294.0,-0.2231,-0.2663,,,,,,,,
+c_SHAP,COD,,,,,,,Tidal range (m),1.3177,,,,,,
+c_SHAP,DO,,,,,,,Tidal range (m),0.0665,,,,,,
+c_SHAP,COD,,,,,,,"Discharge (My Thuan, annual z)",0.8099,,,,,,
+c_SHAP,DO,,,,,,,"Discharge (My Thuan, annual z)",0.0444,,,,,,
+c_SHAP,COD,,,,,,,Rice PD,0.5098,,,,,,
+c_SHAP,DO,,,,,,,Rice PD,0.0391,,,,,,
+c_SHAP,COD,,,,,,,Rainfall (dry z),0.4433,,,,,,
+c_SHAP,DO,,,,,,,Rainfall (dry z),0.0493,,,,,,
+c_SHAP,COD,,,,,,,Urban PD,0.3977,,,,,,
+c_SHAP,DO,,,,,,,Urban PD,0.0256,,,,,,
+c_SHAP,COD,,,,,,,Aquaculture ED,0.3072,,,,,,
+c_SHAP,DO,,,,,,,Aquaculture ED,0.1508,,,,,,
+c_SHAP,COD,,,,,,,Population density,0.1628,,,,,,
+c_SHAP,DO,,,,,,,Population density,0.0852,,,,,,
+c_SHAP,COD,,,,,,,Rainfall (annual z),0.1591,,,,,,
+c_SHAP,DO,,,,,,,Rainfall (annual z),0.1325,,,,,,
+c_SHAP,COD,,,,,,,Urban %,0.1563,,,,,,
+c_SHAP,DO,,,,,,,Urban %,0.037,,,,,,
+c_SHAP,COD,,,,,,,Rice %,0.151,,,,,,
+c_SHAP,DO,,,,,,,Rice %,0.0527,,,,,,
+c_SHAP,COD,,,,,,,Aquaculture %,0.0952,,,,,,
+c_SHAP,DO,,,,,,,Aquaculture %,0.3555,,,,,,
+d_FE_H1,,,,,,,,,,Q_Ann_z,-1.4694,-2.1114,-0.8274,0.00014,0.04506
+d_FE_H1,,,,,,,,,,Year_z,1.5722,0.052,3.0925,0.0434,0.03606
+d_FE_H1,,,,,,,,,,Salinity_z,1.1446,0.0617,2.2275,0.03945,0.23577
+d_FE_H1,,,,,,,,,,Urban_PD_z,2.6149,-0.1441,5.3738,0.06186,0.07918
+d_FE_H1,,,,,,,,,,Aqua_ED_z,4.0012,-2.8324,10.8347,0.23449,0.159
+d_FE_H1,,,,,,,,,,Rice_PD_z,0.9132,-0.3388,2.1652,0.14282,0.36086
+d_FE_H1,,,,,,,,,,Rain_Ann_z,0.3831,-0.3156,1.0817,0.26441,0.56504
+d_FE_H1,,,,,,,,,,Rain_Dry_z2,0.699,-0.1462,1.5441,0.09937,0.41599

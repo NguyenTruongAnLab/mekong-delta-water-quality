@@ -1,0 +1,11 @@
+Panel,Station,TheilSen_AOU_yr,Resp_Share_pct,Spearman_rho,p,n
+a_AOU_series,Tan Chau,0.05033,,,,
+a_AOU_series,Can Tho,0.04702,,,,
+a_AOU_series,My Thuan,0.0686,,,,
+a_AOU_series,My Tho,0.05705,,,,
+b_partition,Tan Chau,,68.7,,,
+b_partition,Can Tho,,66.9,,,
+b_partition,My Thuan,,82.4,,,
+b_partition,My Tho,,81.9,,,
+c_dry_pH_COD,,,,-0.1975,1.63e-06,580.0
+d_dry_COD_AOU,,,,0.3077,1.7e-07,277.0

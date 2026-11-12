@@ -1,9 +1,9 @@
 cff-version: 1.2.0
 message: "If you use this software or the associated derived datasets, please cite this archive."
 type: software
-title: "Hydrodynamic shift controls organic pollution in the Mekong Delta: Analysis and verification code"
-version: 2.0.0
-date-released: "2026-04-18"
+title: "River regulation and tidal amplification drive organic pollution across the Mekong Delta: Analysis and verification code"
+version: 3.0.0
+date-released: "2026-11-12"
 license: MIT
 repository-code: "https://github.com/NguyenTruongAnLab/mekong-delta-water-quality"
 doi: "10.5281/zenodo.20024193"
@@ -11,7 +11,7 @@ authors:
   - family-names: "Nguyen"
     given-names: "An Truong"
     email: "truong-an.nguyen@sorbonne-universite.fr"
-    affiliation: "Université Grenoble Alpes, CNRS, IRD, INRAE, Grenoble-INP, IGE, 38000, Grenoble, France; Centre for Asian Research on Water (CARE), Ho Chi Minh City University of Technology (HCMUT), 268 Ly Thuong Kiet Street, District 10, Ho Chi Minh City, Vietnam"
+    affiliation: "Université Grenoble Alpes, CNRS, IRD, INRAE, Grenoble-INP, IGE, 38000, Grenoble, France; Centre for Asian Research on Water (CARE), Ho Chi Minh City University of Technology (HCMUT), 268 Ly Thuong Kiet Street, District 10, Ho Chi Minh City, Vietnam; Sorbonne Université, CNRS, EPHE, UMR 7619 Metis, BP 123, Tour 56-55, Etage 3, 4 Place Jussieu, 75005 Paris, France"
   - family-names: "Némery"
     given-names: "Julien"
     affiliation: "Université Grenoble Alpes, CNRS, IRD, INRAE, Grenoble-INP, IGE, 38000, Grenoble, France; Centre for Asian Research on Water (CARE), Ho Chi Minh City University of Technology (HCMUT), 268 Ly Thuong Kiet Street, District 10, Ho Chi Minh City, Vietnam"
@@ -37,8 +37,9 @@ keywords:
   - Mekong Delta
   - water quality
   - chemical oxygen demand
+  - biochemical oxygen demand
+  - apparent oxygen utilization
   - concentration-discharge scaling
   - WRTDS flow normalization
-  - tidal flushing
+  - tidal amplification
   - fixed-effects panel regression
-  - TreeSHAP

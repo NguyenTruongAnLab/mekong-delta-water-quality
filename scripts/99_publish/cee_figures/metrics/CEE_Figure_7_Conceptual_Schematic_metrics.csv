@@ -1,0 +1,11 @@
+Metric,Value
+DO_lt5_pct_1985_2004,0.7
+DO_lt5_pct_2005_2022,10.7
+Apex_COD_CI_1985_2004,0.84
+Apex_COD_CI_2005_2022,0.49
+Mainstem_COD_NCF_pct_1985_2004,-10.9
+Mainstem_COD_NCF_pct_2005_2022,-1.4
+Estuary_BOD5_Excess_mgL_2005_2012,-1.63
+Estuary_BOD5_Excess_mgL_2013_2022,2.81
+Estuary_COD_HalideSafe_Excess_mgL_2013_2022,4.56
+PDF_Size_KB,406.2

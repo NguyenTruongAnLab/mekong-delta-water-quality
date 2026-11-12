@@ -1,0 +1,9 @@
+Station,Parameter,Phase,Spearman_rho_monthly,LoopArea_std_signed
+Tan Chau,COD,Phase 1 (≤2004),0.9301,0.2063
+Tan Chau,COD,Phase 2 (>2004),0.8462,0.288
+Tan Chau,DO,Phase 1 (≤2004),0.0979,0.1362
+Tan Chau,DO,Phase 2 (>2004),0.4965,1.1198
+Tan Chau,NH4-N,Phase 1 (≤2004),-0.1678,-4.3894
+Tan Chau,NH4-N,Phase 2 (>2004),-0.0769,-0.6951
+Tan Chau,NO3-N,Phase 1 (≤2004),0.5245,-2.2139
+Tan Chau,NO3-N,Phase 2 (>2004),0.7552,-3.663
