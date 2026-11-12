@@ -107,7 +107,7 @@ def main() -> None:
 
         for pidx, (label, yr0, yr1) in enumerate([(p1_label, early[0], early[1]),
                                                    (p2_label, late[0], late[1])]):
-            vals = []
+            vals, ci_lo_l, ci_hi_l, stn_clouds = [], [], [], []
             offset = -w / 2 + pidx * w
             clr_p = period_clrs.get(label, "#969696")
 
@@ -120,7 +120,17 @@ def main() -> None:
                 sub["excess"] = sub[pcol].to_numpy(dtype=float) - expected
                 excess = sub["excess"].to_numpy(dtype=float)
                 val = float(np.nanmean(excess)) if excess.size else np.nan
+                if excess.size >= 4:
+                    boots = rng.choice(excess, size=(2000, len(excess)), replace=True).mean(axis=1)
+                    lo, hi = [float(x) for x in np.percentile(boots, [2.5, 97.5])]
+                else:
+                    lo, hi = val, val
+                sm = sub.groupby("stationName")["excess"].mean().to_numpy(dtype=float) if not sub.empty else np.array([])
+
                 vals.append(val)
+                ci_lo_l.append(lo)
+                ci_hi_l.append(hi)
+                stn_clouds.append(sm)
                 if np.isfinite(val):
                     all_vals.append(val)
 
@@ -131,36 +141,51 @@ def main() -> None:
                     "Variable_short": short,
                     "Period": label,
                     "Excess_Mean": None if not np.isfinite(val) else round(val, 4),
+                    "CI95_low": None if not np.isfinite(lo) else round(lo, 4),
+                    "CI95_high": None if not np.isfinite(hi) else round(hi, 4),
                     "Fresh_Endmember": round(fresh, 4),
                     "Sea_Endmember": round(sea, 4),
                     "N": int(len(sub)),
+                    "N_stations": int(len(sm)),
                 })
 
             ax.bar(x_pos + offset, vals, w,
-                   color=clr_p, alpha=0.82,
-                   edgecolor="white", linewidth=0.3, label=label, zorder=3)
+                   color=clr_p, alpha=0.75,
+                   edgecolor="white", linewidth=0.3, label=label, zorder=2)
 
-            for i, v in enumerate(vals):
+            for i, (v, lo, hi, sm) in enumerate(zip(vals, ci_lo_l, ci_hi_l, stn_clouds)):
+                if sm.size > 0:
+                    jit = rng.uniform(-w * 0.28, w * 0.28, size=sm.size)
+                    ax.scatter(np.full(sm.size, x_pos[i] + offset) + jit, sm,
+                               s=9.5, facecolors="white", edgecolors=clr_p,
+                               linewidths=0.55, alpha=0.58, zorder=3)
                 if np.isfinite(v) and abs(v) > 0.001:
+                    ax.errorbar(x_pos[i] + offset, v,
+                                yerr=[[max(0.0, v - lo)], [max(0.0, hi - v)]],
+                                fmt="none", ecolor="#222222", elinewidth=0.75,
+                                capsize=1.8, capthick=0.75, zorder=4)
                     lbl_txt = f"{v:.3f}" if abs(v) < 1.0 else f"{v:.2f}"
-                    ax.text(x_pos[i] + offset, v, lbl_txt,
+                    y_anc = hi if v >= 0 else lo
+                    if v >= 0:
+                        y_lbl = y_anc * 1.34 if y_anc > 0.08 else y_anc + 0.032
+                    else:
+                        y_lbl = y_anc * 1.30
+                    ax.text(x_pos[i] + offset, y_lbl, lbl_txt,
                             ha="center", va="bottom" if v >= 0 else "top",
-                            fontsize=6.8, fontweight="bold", color="#222222", zorder=5)
+                            fontsize=6.6, fontweight="bold", color="#111111",
+                            bbox=dict(boxstyle="round,pad=0.07", facecolor="white",
+                                      alpha=0.84, edgecolor="none"),
+                            zorder=6)
                 elif not np.isfinite(v):
                     ax.text(x_pos[i] + offset, 0.015, "n.d.",
                             ha="center", va="bottom",
                             fontsize=6.5, style="italic", color="#666666")
 
-        ax.axhline(0, color="black", lw=0.5)
+        ax.axhline(0, color="black", lw=0.55, zorder=1)
 
-        abs_vals = np.abs(np.asarray(all_vals, dtype=float))
-        abs_vals = abs_vals[np.isfinite(abs_vals) & (abs_vals > 0)]
-        if abs_vals.size:
-            linthresh = float(np.clip(np.percentile(abs_vals, 20), 1e-4, 1e3))
-            ax.set_yscale("symlog", linthresh=linthresh)
-            vmax = float(np.nanmax(abs_vals))
-            ax.set_ylim(-4.2, max(vmax * 2.2, 85.0))
-        ax.yaxis.set_major_locator(mticker.FixedLocator([-2, 0, 0.1, 1, 10, 40]))
+        ax.set_yscale("symlog", linthresh=0.05)
+        ax.set_ylim(-34.0, 360.0)
+        ax.yaxis.set_major_locator(mticker.FixedLocator([-10, -1, 0, 0.1, 1, 10, 100]))
         ax.yaxis.set_minor_locator(mticker.NullLocator())
         ax.yaxis.set_major_formatter(mticker.FuncFormatter(
             lambda x, _: "0" if x == 0 else f"{x:g}"))
@@ -170,12 +195,12 @@ def main() -> None:
         ax.set_ylabel(r"Non-conservative excess ($\mathrm{mg\ L^{-1}}$, symlog)"
                       + "\n" + r"(observed $-$ expected)", fontsize=8)
         panel_label(ax, "a", x=-0.07, y=1.08)
-        ax.legend(fontsize=7, frameon=True, framealpha=0.9, edgecolor="none", loc="lower right")
-        ax.text(0.48, 0.24, "Above zero = in-delta source",
-                transform=ax.transAxes, fontsize=7.6, color="#b2182b",
-                ha="center", va="bottom", style="italic")
-        ax.text(0.48, 0.08, "Below zero = in-delta sink",
-                transform=ax.transAxes, fontsize=7.6, color="#2166ac",
+        ax.legend(fontsize=7, frameon=True, framealpha=0.92, edgecolor="none", loc="lower right")
+        ax.text(0.49, 0.90, "Above zero = in-delta source",
+                transform=ax.transAxes, fontsize=7.4, color="#b2182b",
+                ha="center", va="top", style="italic")
+        ax.text(0.49, 0.07, "Below zero = in-delta sink",
+                transform=ax.transAxes, fontsize=7.4, color="#2166ac",
                 ha="center", va="bottom", style="italic")
 
     # ── (b–d) C–Salinity mixing plots: COD, chloride-immune BOD5, and NO3-N ──

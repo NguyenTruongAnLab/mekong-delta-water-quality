@@ -106,6 +106,8 @@ def main() -> None:
     mb_summary = pd.DataFrame(columns=[
         "Parameter", "Phase1_NCF_pct", "Phase2_NCF_pct", "Delta_pct", "Trend_slope_pct_yr", "Kendall_p", "n_years"
     ])
+    mb_yearly: dict[str, tuple[np.ndarray, np.ndarray]] = {}
+    rng = np.random.default_rng(42)
     if MB_CSV.exists():
         mb = pd.read_csv(MB_CSV)
         rows = []
@@ -118,8 +120,11 @@ def main() -> None:
             ya = annual.to_numpy(dtype=float)
             slope = float(np.asarray(theilslopes(ya, xa), dtype=float)[0])
             pval = float(np.asarray(kendalltau(xa, ya), dtype=float)[1])
-            p1 = float(np.mean(ya[xa <= BREAK_YEAR])) if (xa <= BREAK_YEAR).any() else np.nan
-            p2 = float(np.mean(ya[xa > BREAK_YEAR])) if (xa > BREAK_YEAR).any() else np.nan
+            y1 = ya[xa <= BREAK_YEAR]
+            y2 = ya[xa > BREAK_YEAR]
+            mb_yearly[p_name] = (y1, y2)
+            p1 = float(np.mean(y1)) if y1.size else np.nan
+            p2 = float(np.mean(y2)) if y2.size else np.nan
             row = {
                 "Parameter": p_name, "Phase1_NCF_pct": p1, "Phase2_NCF_pct": p2,
                 "Delta_pct": p2 - p1 if np.isfinite(p1) and np.isfinite(p2) else np.nan,
@@ -188,11 +193,12 @@ def main() -> None:
 
     ax_d = fig.add_subplot(gs[1, 1])
     if not mb_summary.empty:
+        import matplotlib.ticker as mticker
         ordered_param_names = [p.split(" (")[0] for p in params]
         mbp = pd.DataFrame({"Parameter": ordered_param_names})
         mbp = mbp.merge(mb_summary, on="Parameter", how="left").dropna(subset=["Phase1_NCF_pct", "Phase2_NCF_pct"]).reset_index(drop=True)
         xpos = np.arange(len(mbp))
-        w = 0.26
+        w = 0.28
         p1_vals = mbp["Phase1_NCF_pct"].to_numpy(dtype=float)
         p2_vals = mbp["Phase2_NCF_pct"].to_numpy(dtype=float)
         has_mb = np.isfinite(p1_vals) & np.isfinite(p2_vals)
@@ -201,29 +207,52 @@ def main() -> None:
             ax_d.axvline(pos, color="#e0e0e0", lw=0.6, ls="--", zorder=1)
 
         ax_d.bar(xpos - w / 2, np.nan_to_num(p1_vals, nan=0.0), w,
-                 color="#6baed6", edgecolor="none", linewidth=0, label=f"Phase 1 (≤{BREAK_YEAR})", zorder=3)
+                 color="#6baed6", alpha=0.78, edgecolor="none", linewidth=0, label=f"Phase 1 (≤{BREAK_YEAR})", zorder=2)
         ax_d.bar(xpos + w / 2, np.nan_to_num(p2_vals, nan=0.0), w,
-                 color="#fb6a4a", edgecolor="none", linewidth=0, label=f"Phase 2 (>{BREAK_YEAR})", zorder=3)
+                 color="#fb6a4a", alpha=0.78, edgecolor="none", linewidth=0, label=f"Phase 2 (>{BREAK_YEAR})", zorder=2)
         ax_d.axhline(0, color="#444444", lw=0.7, zorder=2)
 
-        y_limit_tracker = 0.0
         for i, (_, row) in enumerate(mbp.iterrows()):
             if not bool(has_mb[i]):
                 continue
+            pname = str(row["Parameter"])
+            y1, y2 = mb_yearly.get(pname, (np.array([]), np.array([])))
+            top_pair = max(float(row["Phase1_NCF_pct"]), float(row["Phase2_NCF_pct"]), 0.0)
+            for off, y_arr, clr_edge in [(-w / 2, y1, "#2171b5"), (+w / 2, y2, "#cb181d")]:
+                if y_arr.size > 0:
+                    jit = rng.uniform(-w * 0.26, w * 0.26, size=y_arr.size)
+                    ax_d.scatter(np.full(y_arr.size, xpos[i] + off) + jit, y_arr,
+                                 s=6.5, facecolors="white", edgecolors=clr_edge,
+                                 linewidths=0.45, alpha=0.58, zorder=3)
+                    m_val = float(np.mean(y_arr))
+                    boots = rng.choice(y_arr, size=(2000, y_arr.size), replace=True).mean(axis=1)
+                    lo, hi = [float(x) for x in np.percentile(boots, [2.5, 97.5])]
+                    ax_d.errorbar(xpos[i] + off, m_val,
+                                  yerr=[[max(0.0, m_val - lo)], [max(0.0, hi - m_val)]],
+                                  fmt="none", ecolor="#222222", elinewidth=0.65,
+                                  capsize=1.5, capthick=0.65, zorder=4)
+                    top_pair = max(top_pair, hi, float(np.max(y_arr)))
+
             delta_txt = row["Delta_pct"]
             sig = _sig_mark(float(row["Kendall_p"])) if np.isfinite(row["Kendall_p"]) else ""
-            h_val = max(float(row["Phase1_NCF_pct"]), float(row["Phase2_NCF_pct"]), 0.0)
-            ax_d.text(float(i), h_val + (8.5 if row["Parameter"] == "TSS" else (2.5 if row["Parameter"] == "TP" else 4.5)),
-                      f"Δ={delta_txt:+.1f}{sig}", ha="center", va="bottom", fontsize=6.2, color="#000000")
-            y_limit_tracker = max(y_limit_tracker, h_val)
+            y_lbl = top_pair * 1.24 if top_pair > 22.0 else top_pair + 4.5
+            ax_d.text(float(i), y_lbl, f"Δ={delta_txt:+.1f}{sig}",
+                      ha="center", va="bottom", fontsize=5.9, color="#000000",
+                      bbox=dict(boxstyle="round,pad=0.06", facecolor="white", alpha=0.82, edgecolor="none"),
+                      zorder=5)
 
-        ax_d.set_ylim(top=y_limit_tracker * 1.35 if y_limit_tracker > 0 else 100)
+        ax_d.set_yscale("symlog", linthresh=20.0)
+        ax_d.set_ylim(-75.0, 1400.0)
+        ax_d.yaxis.set_major_locator(mticker.FixedLocator([-40, -20, 0, 20, 50, 150]))
+        ax_d.yaxis.set_minor_locator(mticker.NullLocator())
+        ax_d.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: "0" if x == 0 else f"{x:g}"))
         ax_d.set_xticks(xpos)
         ax_d.set_xticklabels([param_latex.get(x, x) for x in mbp["Parameter"]], rotation=32, ha="right", fontsize=6.5, color="#000000")
-        ax_d.set_ylabel("Non-conservative fraction (%)", fontsize=7.8, color="#000000", weight="bold")
+        ax_d.set_ylabel("Non-conservative fraction (%, symlog)", fontsize=7.6, color="#000000", weight="bold")
         ax_d.tick_params(axis="both", labelsize=6.5, labelcolor="#000000")
         ax_d.text(0.03, 0.04, "* p < 0.05", transform=ax_d.transAxes, fontsize=6.5, color="#000000", style="italic")
-        ax_d.legend(fontsize=6.5, frameon=True, framealpha=0.9, edgecolor="none", loc="upper right", labelcolor="#000000")
+        ax_d.legend(fontsize=6.0, ncol=2, frameon=True, framealpha=0.92, edgecolor="none",
+                    loc="upper center", bbox_to_anchor=(0.50, 1.00), columnspacing=0.9, handlelength=1.2, labelcolor="#000000")
 
     panel_label(ax_d, "d", x=-0.16, y=1.08)
     fig.tight_layout(rect=(0, 0, 1, 0.97))

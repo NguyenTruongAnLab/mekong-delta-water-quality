@@ -97,7 +97,7 @@ Scripts that aggregate observation-level monthly surveys, daily discharge series
 
 ## Data availability
 
-Public datasets, derived panel caches, and access instructions for the Zenodo archive (`10.5281/zenodo.20024193`, version record `10.5281/zenodo.20024194`) are documented in [`data/README.md`](data/README.md).
+Public datasets, derived panel caches, and access instructions for the Zenodo archive (`10.5281/zenodo.20024193`, version record `10.5281/zenodo.23888498`) are documented in [`data/README.md`](data/README.md).
 
 ## License
 

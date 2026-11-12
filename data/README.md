@@ -23,7 +23,7 @@ The harmonized station-year caches and precomputed output tables listed below ar
 
 ## External public data portals and restricted Zenodo archive
 
-Raw monitoring records from provincial and regional agencies are governed by institutional data-sharing agreements and archived under restricted access on Zenodo for non-commercial research and peer review (concept DOI https://doi.org/10.5281/zenodo.20024193; version record https://doi.org/10.5281/zenodo.20024194). Place the raw files from `data.zip` at the paths below to run the observation-level monthly and hourly scripts (`cee_verify_oxygen_and_trends.py`, `cee_verify_halide_and_bod5_mixing.py`, `03_08_cq_regime_shift.py`, `03_11_mass_balance.py`, and `cee_figures/cee_run_all.py`):
+Raw monitoring records from provincial and regional agencies are governed by institutional data-sharing agreements and archived under restricted access on Zenodo for non-commercial research and peer review (concept DOI https://doi.org/10.5281/zenodo.20024193; version record https://doi.org/10.5281/zenodo.23888498). Place the raw files from `data.zip` at the paths below to run the observation-level monthly and hourly scripts (`cee_verify_oxygen_and_trends.py`, `cee_verify_halide_and_bod5_mixing.py`, `03_08_cq_regime_shift.py`, `03_11_mass_balance.py`, and `cee_figures/cee_run_all.py`):
 
 | Dataset | Expected local path | Source and access |
 |---|---|---|
